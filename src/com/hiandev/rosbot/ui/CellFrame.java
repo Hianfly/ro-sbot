@@ -172,6 +172,9 @@ public class CellFrame {
             g2d.setColor(Color.RED);
             if (cellData != null) {
 	            for (int[] r : cellData) {
+//	            	if (r[0] < (r[1] * 4) + 1 && r[1] < (r[2] * 4) + 1) {
+//	            		continue;
+//	            	}
 	            	g2d.drawRect(r[0], r[1], r[2] - 1, r[3] - 1);
 	            }
             }

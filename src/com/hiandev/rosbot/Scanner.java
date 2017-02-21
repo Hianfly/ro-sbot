@@ -11,6 +11,7 @@ import java.awt.image.Raster;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.hiandev.rosbot.ui.CellFrame;
 
@@ -27,7 +28,7 @@ public class Scanner {
 		this.cellQuadrans = new int[4][];
     }
 
-	public long interval = 100;
+	public long interval = 25;
 	public boolean running = false;
 	public void start() {
 		showCellFrame();
@@ -39,8 +40,8 @@ public class Scanner {
 			captureScreen();
 		    convertScreenToCell();
 		    endCell();
-		    detectCharMode();
 		    endTime();
+		    detectCharMode();
 		    sleep(interval);
 		}
 	}
@@ -86,102 +87,202 @@ public class Scanner {
 	public static final int CHAR_MODE_IDLE = 0;
 	public static final int CHAR_MODE_TARGETING = 1;
 	public static final int CHAR_MODE_ATTACKING = 2;
-	private int charMode = -1;
+	private int charMode = 0;
+	private int charMove = 0;
 	private int[][] modeTargeting = new int[][] { 
-		{  0, 0, 0,   0,   0,   0,   0,   0,   0,   0,   0,   0 },
-		{  0, 0, 0, 250, 250, 250, 250, 250, 250, 250, 250, 250 },
-		{  0, 0, 0, 250, 250, 250, 250, 250, 250, 250, 250, 250 },
-		{  0, 0, 0, 250, 250, 250, 250, 250, 250, 250, 250, 250 }
+		{  10, 10, 10,  10,  10,  10,  10,  10,  10,  10,  10,  10 },
+		{  10, 10, 10, 250, 250, 250, 250, 250, 250, 250, 250, 250 },
+		{  10, 10, 10, 250, 250, 250, 250, 250, 250, 250, 250, 250 },
+		{  10, 10, 10, 250, 250, 250, 250, 250, 250, 250, 250, 250 },
+		{  -1, -1, -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1 },
+		{  -1, -1, -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1 },
+		{  -1, -1, -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1 },
+		{  -1, -1, -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1 }
 	};
 	private int[][] modeAttacking = new int[][] { 
-		{  0, 0, 0,   0,   0,   0,  -1,  -1,  -1,  -1,  -1,  -1 },
-		{  0, 0, 0, 160, 190, 220,   0,   0,   0,  -1,  -1,  -1 },
-		{  0, 0, 0, 160, 190, 220,  -1,  -1,  -1,   0,   0,   0 },
-		{  0, 0, 0, 160, 190, 220,  -1,  -1,  -1,  -1,  -1,  -1 }
+		{  10, 10, 10,  20,  20,  20,  -1,  -1,  -1,  -1,  -1,  -1 },
+		{  10, 10, 10, 150, 170, 210,  -1,  -1,  -1,  -1,  -1,  -1 },
+		{  10, 10, 10, 150, 170, 210,  -1,  -1,  -1,  -1,  -1,  -1 },
+		{  10, 10, 10, 160, 170, 210,  -1,  -1,  -1,  -1,  -1,  -1 },
+		{  -1, -1, -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1 },
+		{  -1, -1, -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1 },
+		{  -1, -1, -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1 },
+		{  -1, -1, -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1 }
+
+//		{  10, 10, 10,  20,  20,  20,  -1,  -1,  -1,  -1,  -1,  -1 },
+//		{  10, 10, 10, 150, 170, 210,  20,  30,  20,  -1,  -1,  -1 },
+//		{  10, 10, 10, 150, 170, 210,  60,  80, 100,  30,  40,  30 },
+//		{  10, 10, 10, 160, 170, 210, 150, 160, 200,  60,  80, 100 },
+//		{  10, 10, 10, 160, 170, 210,  -1,  -1,  -1,  -1,  -1,  -1 },
+//		{  10, 10, 10, 170, 180, 220,  -1,  -1,  -1,  -1,  -1,  -1 },
+//		{  10, 10, 10, 170, 180, 220,  -1,  -1,  -1,  -1,  -1,  -1 },
+//		{  10, 10, 10, 170, 180, 220,  -1,  -1,  -1,  -1,  -1,  -1 }
+		
 	};
-	long lastDetectionTime = 0;
-	long lastAttackingTime = 0;
-	long lastTargetingTime = 0;
-	long idleSignal = 0;
+	long detectionTime = 0;
+	long detectionInterval = 2000; // jangan lebih kecil dr 1 dtk untuk menghindari cellChangedData
+	long attackingTime = 0;
+	long numIdleSignal = 0;
 	private void detectCharMode() {
-    	Point point = MouseInfo.getPointerInfo().getLocation();
     	try {
-	    	int mx = (int) point.getX() - cellFrame.getScreenX();
-	    	int my = (int) point.getY() - cellFrame.getScreenY();
-	    	if (mx > cellFrame.getWidth() || my > cellFrame.getHeight()) {
+    		/*
+    		 * 
+    		 */
+	    	long       now = System.currentTimeMillis();
+	    	this .charMove = getMove();
+	    	int[] cellData = new int[2];
+	    	int[]   pixels = captureMousePixels(cellData);
+    		int    oldMode = charMode;
+	    	int    newMode = getMode(pixels, now);
+	    	if (charMode == CHAR_MODE_ATTACKING && newMode == CHAR_MODE_IDLE && now - attackingTime > 1000) {
+    			numIdleSignal = 1;
+    		}
+	    	if (now - detectionTime < detectionInterval) {
 	    		return;
 	    	}
-	    	int[] pixels = shrinkCellData(screenRaster.getPixels(mx + 1, my + 1, 4, 4, new int[4 * 4 * 3]), 10);
-	    	final 
-	    	int newMode = isMatch(modeTargeting, pixels, 4, 20) ? CHAR_MODE_TARGETING : 
-	    		          isMatch(modeAttacking, pixels, 4, 20) ? CHAR_MODE_ATTACKING : 
-	    		          CHAR_MODE_IDLE;
-	    	final 
-	    	int oldMode = charMode;
-	    	long now = System.currentTimeMillis();
-	    	if (now - lastDetectionTime < 500) {
-	    		return;
-	    	}
-	    	lastDetectionTime = now;
-	    	if (oldMode == CHAR_MODE_IDLE && newMode == CHAR_MODE_ATTACKING) {
-	    		return;
-	    	}
+	    	detectionTime = now;
 	    	/*
 	    	 * 
-	    	 * 
-	    	 * 
 	    	 */
-	    	System.out.println(oldMode + " : " + newMode + " > " + idleSignal);
-	    	if (newMode == CHAR_MODE_TARGETING) {
-		    	charMode = newMode;
-	    		mScannerListener.onTargeting(Scanner.this, new int[] { mx, my, cellSize, cellSize });
-	    	}
-	    	if (newMode == CHAR_MODE_IDLE) {
-	    		if (idleSignal < 3) {
-	    			if (oldMode == CHAR_MODE_TARGETING || oldMode == CHAR_MODE_IDLE) {
-		    			saveMode();
-		    			idleSignal = 3;
-	    			}
-	    			else {
-		    			saveMode();
-		    			idleSignal++;
-	    			}
+	    	P : {
+	    		if (newMode == CHAR_MODE_ATTACKING && numIdleSignal == 0) {
+	    			attackingTime = now;
+  					break P;
 	    		}
-	    		else {
-	    			idleSignal = 0;
-		    		charMode = newMode;
+	    		if (newMode == CHAR_MODE_ATTACKING && numIdleSignal == 1) {
+	   	    		numIdleSignal = 0;
+		    		charMode = CHAR_MODE_IDLE;
 		    		mScannerListener.onIdle(Scanner.this);
+  					break P;
 	    		}
+		    	if (newMode == CHAR_MODE_TARGETING) {
+		    		charMode = CHAR_MODE_TARGETING;
+		    		mScannerListener.onTargeting(Scanner.this, cellData);
+		    		break P;
+		    	}
+		    	if (newMode == CHAR_MODE_IDLE) {
+		    		charMode = CHAR_MODE_IDLE;
+		    		mScannerListener.onIdle(Scanner.this);
+		    		break P;
+		    	}
 	    	}
+	    	System.out.println(oldMode + " : " + newMode + " : " + charMode + " >>> " + charMove + " : " + numIdleSignal + " : " + cellChangedCounter  + " " + (now - attackingTime) + "ms");
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
 	}
-    
-	
-    public void attack(int[] cellData) {
-		robot.mouseMove(cellData[0] + cellFrame.getScreenX() + 1, cellData[1] + cellFrame.getScreenY() + 1);
-		try { Thread.sleep(20); } catch (Exception e) { }
-		robot.mousePress(InputEvent.BUTTON1_MASK);
-		try { Thread.sleep(20); } catch (Exception e) { }
-		robot.mouseRelease(InputEvent.BUTTON1_MASK);
-		charMode = CHAR_MODE_ATTACKING;
-		lastAttackingTime = System.currentTimeMillis();
-    }
-    public void saveMode() {
+	private int getMove() {
+		int m = 0;
+		if (cellChangedCounter > (long) (cellRows * cellCols * 0.9)) {
+			m = 1;
+    	}
+		return m;
+	}
+	private int getMode(int[] pixels, long now) {
+		int newMode = -1;
+		int m = isMatch(modeTargeting, pixels, 4, 20) ? CHAR_MODE_TARGETING : 
+	            isMatch(modeAttacking, pixels, 4, 20) ? CHAR_MODE_ATTACKING : 
+	          	CHAR_MODE_IDLE;
+		P : {
+    		if (m == CHAR_MODE_ATTACKING) {
+   				newMode = (charMode == CHAR_MODE_IDLE) ? CHAR_MODE_IDLE : CHAR_MODE_ATTACKING;
+    			break P;
+    		}
+    		if (m == CHAR_MODE_IDLE) {
+   				newMode = (charMode == CHAR_MODE_ATTACKING && charMove == 1) ? CHAR_MODE_ATTACKING : CHAR_MODE_IDLE;
+    			break P;
+    		}
+			newMode = m;
+		}
+		return newMode;
+	}
+	private void mouseIdle() {
     	robot.mouseMove(cellFrame.getScreenX() + 1, cellFrame.getScreenY() + 1);
-		try { Thread.sleep(20); } catch (Exception e) { }
     }
-    public void target(int[] cellData) {
+	private void mouseClick() {
+    	robot.mousePress(InputEvent.BUTTON1_MASK);
+    	sleep(20);
+		robot.mouseRelease(InputEvent.BUTTON1_MASK);
+    }
+	private void mouseGoto(int x, int y) {
+    	robot.mouseMove(x, y);
+    }
+	private ConcurrentHashMap<String, String> UNTARGETABLE_MAP = new ConcurrentHashMap<>();  
+	private String summary(int[] cellData) {
+		StringBuilder cellSummary = new StringBuilder();
+		int[] pixels = this.cellData[cellData[0] / cellSize][cellData[1] / cellSize];
+		for (int x = 0; x < pixels.length; x += 12) {
+			int red = ((pixels[x + 0] + pixels[x + 3] + pixels[x + 6] + pixels[x +  9]) / 4) / 26;
+			int gre = ((pixels[x + 1] + pixels[x + 4] + pixels[x + 7] + pixels[x + 10]) / 4) / 26;
+			int blu = ((pixels[x + 2] + pixels[x + 5] + pixels[x + 8] + pixels[x + 11]) / 4) / 26;
+			cellSummary.append(red).append(gre).append(blu);
+		}
+		return cellSummary.toString();
+		
+	}
+    public int target(int[] cellData) {
+    	int r = 0;
+    	String cs = summary(cellData);
+    	if (UNTARGETABLE_MAP.get(cs) != null) {
+    		System.out.println("UNTARGETABLE_MAP --> " + cs);
+    		r = 2;
+    	}
+    	else {
+	    	robot.mouseMove(cellData[0] + cellFrame.getScreenX() + 1, cellData[1] + cellFrame.getScreenY() + 1);
+	    	sleep(20);
+			captureScreen();
+		    int[] pixels = captureMousePixels(new int[2]);
+	    	if (isMatch(modeTargeting, pixels, 4, 20)) {
+	    		charMode = CHAR_MODE_TARGETING;
+	    		mScannerListener.onTargeting(this, cellData);
+	    	}
+	    	else {
+	    		r = 1;
+	    		UNTARGETABLE_MAP.put(cs, "");
+	    	}
+    	}
+    	return r;
+    }
+    private int[] captureMousePixels(int[] cellData) {
+    	Point point = MouseInfo.getPointerInfo().getLocation();
+    	cellData[0] = (int) point.getX() - cellFrame.getScreenX();
+    	cellData[1] = (int) point.getY() - cellFrame.getScreenY();
+    	if (cellData[0] >= cellFrame.getWidth() || cellData[1] >= cellFrame.getHeight()) {
+    		return null;
+    	}
+    	return shrinkCellData(screenRaster.getPixels(cellData[0] + 1, cellData[1] + 1, 4, 8, new int[4 * 8 * 3]), 10);
+    }
+    public void attack() {
+    	System.out.println("Trying to Attack");
+    	attackingTime = System.currentTimeMillis();
+    	charMode = CHAR_MODE_ATTACKING;
+    	mouseClick();
+    	sleep(20);
+		mouseIdle();
+    	sleep(100);
+		mScannerListener.onAttacking(Scanner.this);	
+    }
+    public void move(int[] cellData) {
+//    	charMode = CHAR_MODE_MOVING;
     	robot.mouseMove(cellData[0] + cellFrame.getScreenX() + 1, cellData[1] + cellFrame.getScreenY() + 1);
+    	sleep(20);
+    	mouseClick();
+    	sleep(20);
+		mouseIdle();
+		sleep(20);
+//		mScannerListener.onMoving(Scanner.this);
     }
-    public void randomMove() {
+    public void moveRandomly() {
     	int x = new Random().nextInt(cellFrame.getWidth());
     	int y = new Random().nextInt(cellFrame.getHeight());
-    	robot.mouseMove(x + cellFrame.getScreenX() + 1, y + cellFrame.getScreenY() + 1);try { Thread.sleep(20); } catch (Exception e) { }
-		robot.mousePress(InputEvent.BUTTON1_MASK);
-		try { Thread.sleep(20); } catch (Exception e) { }
-		robot.mouseRelease(InputEvent.BUTTON1_MASK);
+    	mouseGoto(x + cellFrame.getScreenX() + 1, y + cellFrame.getScreenY() + 1);
+    	sleep(20);
+    	mouseClick();
+    	sleep(20);
+		mouseIdle();
+		sleep(20);
+//    	charMode = CHAR_MODE_MOVING;
+//		mScannerListener.onMoving(Scanner.this);
     }
 
     /*
@@ -207,12 +308,7 @@ public class Scanner {
 		cellFrame.clearCells(5);
     }
     private void endCell() {
-    	if (charMode == CHAR_MODE_IDLE) {
-    		cellFrame.updateCells(cellChangedData, cellTargetData);
-    	}
-    	else {
-    		cellFrame.updateCells(null, null);
-    	}
+    	cellFrame.updateCells(cellChangedData, cellTargetData);
     }
     private void showCellFrame() {
     	cellFrame.show();
@@ -327,13 +423,12 @@ public class Scanner {
 	public ArrayList<int[]> getCellChangedDataByDistance() {
 		ArrayList<int[]> result = new ArrayList<>();
 		HashMap<Integer, ArrayList<int[]>> map = new HashMap<>();
-		int midX = ((cellFrame.getWidth()  / 2) / cellSize);
-		int midY = ((cellFrame.getHeight() / 2) / cellSize);
-		
+		int midX = ((cellFrame.getWidth()  / 2) / cellSize) - 0;
+		int midY = ((cellFrame.getHeight() / 2) / cellSize) - 3;
 		for (int x = 0; x < cellChangedData.size(); x++) {
 			int[] data = cellChangedData.get(x);
-			int curX = (data[0] - cellFrame.getScreenX()) / cellSize;
-			int curY = (data[1] - cellFrame.getScreenY()) / cellSize;
+			int curX = (data[0]) / cellSize;
+			int curY = (data[1]) / cellSize;
 			int dist = Math.abs(midX - curX) + Math.abs(midY - curY);
 			ArrayList<int[]> sorted = map.get(dist);
 			if (sorted == null) {
@@ -452,9 +547,38 @@ public class Scanner {
     public static interface ScannerListener {
 
     	public void onIdle(Scanner scanner);
+    	public void onMoving(Scanner scanner);
+    	public void onAttacking(Scanner scanner);
     	public void onTargeting(Scanner scanner, int[] data);
     	
     }
     
+    
+
+//	if (numIdleSignal < maxIdleSignal) {
+//		if (oldMode == CHAR_MODE_MOVING) {
+//			numIdleSignal += 1;
+//		}
+//		else if (oldMode == CHAR_MODE_IDLE) {
+//			numIdleSignal = maxIdleSignal;
+//		}
+//		else if (oldMode == CHAR_MODE_TARGETING) {
+//			numIdleSignal = maxIdleSignal;
+//		}
+//		else if (oldMode == CHAR_MODE_ATTACKING) {
+//			if (now - attackingTime > 1000) {
+//				numIdleSignal = maxIdleSignal;
+//			}
+//		}
+//		else {
+//			numIdleSignal += 1;
+//		}
+//		mouseIdle();
+//	}
+//	else {
+//		numIdleSignal = 0;
+//		charMode = CHAR_MODE_IDLE;
+//		mScannerListener.onIdle(Scanner.this);
+//	}
     
 }
