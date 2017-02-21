@@ -43,23 +43,19 @@ public class Main {
 		
 		@Override
 		public void onIdle(Scanner scanner) {
-//			System.out.print("On Idle");
-			ArrayList<int[]> data = scanner.getCellChangedDataByDistance();
-			if (data == null || data.size() == 0) {
-				scanner.moveRandomly();
-			}
-			else {
-				int index = data.size() > 20 ? 20 : data.size();
-				while (--index >= 0) {
-					int r = scanner.target(data.get(index));
-					if (r == 0) {
-						break;
-					}
-					if (r == 2) {
-						index++;
-					}
-				}
-			}
+//			ArrayList<int[]> data = scanner.getCellChangedDataByDistance();
+//			if (data == null || data.size() == 0) {
+//				scanner.moveRandomly();
+//			}
+//			else {
+//				int index = data.size() > 50 ? 50 : data.size();
+//				while (--index >= 0) {
+//					int r = scanner.target(data.get(index));
+//					if (r == 0) {
+//						break;
+//					}
+//				}
+//			}
 		}
 		
 	}

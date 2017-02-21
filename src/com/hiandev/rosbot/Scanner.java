@@ -11,6 +11,7 @@ import java.awt.image.Raster;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.hiandev.rosbot.ui.CellFrame;
@@ -32,6 +33,23 @@ public class Scanner {
 	public boolean running = false;
 	public void start() {
 		showCellFrame();
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				System.out.println("WATCHERRR");
+				while (true) {
+					Set<String> keys = UNTARGETABLE_MAP.keySet();
+					for (String key : keys) {
+						Integer val = get(key);
+						System.out.println(key + " >>>>>> " + val);
+					}
+					try {
+						Thread.sleep(1000 * 30);
+					} catch (Exception e) {
+					}
+				}
+			}
+		}).start();
 	    sleep(1000);
 		running = true;
 		while (running) {
@@ -108,16 +126,6 @@ public class Scanner {
 		{  -1, -1, -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1 },
 		{  -1, -1, -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1 },
 		{  -1, -1, -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1 }
-
-//		{  10, 10, 10,  20,  20,  20,  -1,  -1,  -1,  -1,  -1,  -1 },
-//		{  10, 10, 10, 150, 170, 210,  20,  30,  20,  -1,  -1,  -1 },
-//		{  10, 10, 10, 150, 170, 210,  60,  80, 100,  30,  40,  30 },
-//		{  10, 10, 10, 160, 170, 210, 150, 160, 200,  60,  80, 100 },
-//		{  10, 10, 10, 160, 170, 210,  -1,  -1,  -1,  -1,  -1,  -1 },
-//		{  10, 10, 10, 170, 180, 220,  -1,  -1,  -1,  -1,  -1,  -1 },
-//		{  10, 10, 10, 170, 180, 220,  -1,  -1,  -1,  -1,  -1,  -1 },
-//		{  10, 10, 10, 170, 180, 220,  -1,  -1,  -1,  -1,  -1,  -1 }
-		
 	};
 	long detectionTime = 0;
 	long detectionInterval = 2000; // jangan lebih kecil dr 1 dtk untuk menghindari cellChangedData
@@ -207,25 +215,68 @@ public class Scanner {
 	private void mouseGoto(int x, int y) {
     	robot.mouseMove(x, y);
     }
-	private ConcurrentHashMap<String, String> UNTARGETABLE_MAP = new ConcurrentHashMap<>();  
-	private String summary(int[] cellData) {
+
+	private int get(String key) {
+		Integer i = UNTARGETABLE_MAP.get(key);
+		if (i == null) {
+			return 0;
+		}
+		else {
+			return i.intValue();
+		}
+	}
+	private int add(String key) {
+		Integer i = UNTARGETABLE_MAP.get(key);
+		if (i == null) {
+			UNTARGETABLE_MAP.put(key, 1);
+		}
+		else {
+			UNTARGETABLE_MAP.put(key, i.intValue() + 1);
+		}
+		return UNTARGETABLE_MAP.get(key);
+	}
+	private int min(String key) {
+		Integer i = UNTARGETABLE_MAP.get(key);
+		if (i == null) {
+			UNTARGETABLE_MAP.put(key, -1);
+		}
+		else {
+			UNTARGETABLE_MAP.put(key, i.intValue() - 1);
+		}
+		return UNTARGETABLE_MAP.get(key);
+	}
+	private ConcurrentHashMap<String, Integer> UNTARGETABLE_MAP = new ConcurrentHashMap<>();  
+	private String createCellRGB(int[] cellData) {
 		StringBuilder cellSummary = new StringBuilder();
 		int[] pixels = this.cellData[cellData[0] / cellSize][cellData[1] / cellSize];
-		for (int x = 0; x < pixels.length; x += 12) {
-			int red = ((pixels[x + 0] + pixels[x + 3] + pixels[x + 6] + pixels[x +  9]) / 4) / 26;
-			int gre = ((pixels[x + 1] + pixels[x + 4] + pixels[x + 7] + pixels[x + 10]) / 4) / 26;
-			int blu = ((pixels[x + 2] + pixels[x + 5] + pixels[x + 8] + pixels[x + 11]) / 4) / 26;
-			cellSummary.append(red).append(gre).append(blu);
+		int[] rgb    = new int[] { 0, 0, 0 };
+		for (int x = 0; x < pixels.length; x += 3) {
+			rgb[0] += pixels[x + 0];
+			rgb[1] += pixels[x + 1];
+			rgb[2] += pixels[x + 2];
 		}
+		rgb[0] = (rgb[0] / (cellSize * cellSize)) / 10 * 10;
+		rgb[1] = (rgb[1] / (cellSize * cellSize)) / 10 * 10;
+		rgb[2] = (rgb[2] / (cellSize * cellSize)) / 10 * 10;
+		cellSummary.append(lrgb(rgb[0])).append(lrgb(rgb[1])).append(lrgb(rgb[2]));
 		return cellSummary.toString();
 		
 	}
+	String lrgb(int value) {
+		if (value < 10) {
+			return "00" + value;
+		}
+		if (value < 100) {
+			return "0" + value;
+		}
+		return "" + value;
+	}
     public int target(int[] cellData) {
-    	int r = 0;
-    	String cs = summary(cellData);
-    	if (UNTARGETABLE_MAP.get(cs) != null) {
-    		System.out.println("UNTARGETABLE_MAP --> " + cs);
+    	int r = 1;
+    	String cs = createCellRGB(cellData);
+    	if (get(cs) < 0) {
     		r = 2;
+    		min(cs);
     	}
     	else {
 	    	robot.mouseMove(cellData[0] + cellFrame.getScreenX() + 1, cellData[1] + cellFrame.getScreenY() + 1);
@@ -233,16 +284,69 @@ public class Scanner {
 			captureScreen();
 		    int[] pixels = captureMousePixels(new int[2]);
 	    	if (isMatch(modeTargeting, pixels, 4, 20)) {
+	    		r = 0;
+	    		add(cs);
 	    		charMode = CHAR_MODE_TARGETING;
 	    		mScannerListener.onTargeting(this, cellData);
 	    	}
 	    	else {
 	    		r = 1;
-	    		UNTARGETABLE_MAP.put(cs, "");
+	    		min(cs);
 	    	}
     	}
+//    	robot.mouseMove(cellData[0] + cellFrame.getScreenX() + 1, cellData[1] + cellFrame.getScreenY() + 1);
+//    	sleep(20);
+//		captureScreen();
+//	    int[] pixels = captureMousePixels(new int[2]);
+//    	if (isMatch(modeTargeting, pixels, 4, 20)) {
+//    		r = 0;
+//    		charMode = CHAR_MODE_TARGETING;
+//    		mScannerListener.onTargeting(this, cellData);
+//    	}
     	return r;
     }
+//    public int targetNearby() {
+//    	int r = 0;
+//    	
+//    	
+//    	ArrayList<int[]> data = getCellChangedDataByDistance();
+//    	if (data == null || data.isEmpty()) {
+//    		r = 1;
+//    	}
+//    	else {
+////			int index = data.size();
+////			int index = data.size() > 100 ? 100 : data.size();
+////			while (--index >= 0) {
+////				int r = scanner.target(data.get(index));
+////				if (r == 0) {
+////					break;
+////				}
+////			}
+//
+//        	String cs = createCellRGB(cellData);
+//        	if (UNTARGETABLE_MAP.get(cs) != null) {
+//        		System.out.println("UNTARGETABLE_MAP --> " + cs);
+//        		r = 2;
+//        	}
+//        	else {
+//    	    	robot.mouseMove(cellData[0] + cellFrame.getScreenX() + 1, cellData[1] + cellFrame.getScreenY() + 1);
+//    	    	sleep(20);
+//    			captureScreen();
+//    		    int[] pixels = captureMousePixels(new int[2]);
+//    	    	if (isMatch(modeTargeting, pixels, 4, 20)) {
+//    	    		charMode = CHAR_MODE_TARGETING;
+//    	    		mScannerListener.onTargeting(this, cellData);
+//    	    	}
+//    	    	else {
+//    	    		r = 1;
+//    	    		UNTARGETABLE_MAP.put(cs, "");
+//    	    	}
+//        	}
+//		}
+//    	
+//    	
+//    	return r;
+//    }
     private int[] captureMousePixels(int[] cellData) {
     	Point point = MouseInfo.getPointerInfo().getLocation();
     	cellData[0] = (int) point.getX() - cellFrame.getScreenX();
@@ -250,7 +354,13 @@ public class Scanner {
     	if (cellData[0] >= cellFrame.getWidth() || cellData[1] >= cellFrame.getHeight()) {
     		return null;
     	}
-    	return shrinkCellData(screenRaster.getPixels(cellData[0] + 1, cellData[1] + 1, 4, 8, new int[4 * 8 * 3]), 10);
+    	int[] r = new int[0];
+    	try {
+    		r = shrinkCellData(screenRaster.getPixels(cellData[0] + 1, cellData[1] + 1, 4, 8, new int[4 * 8 * 3]), 10);
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}
+    	return r;
     }
     public void attack() {
     	System.out.println("Trying to Attack");
@@ -296,7 +406,7 @@ public class Scanner {
     private int[][] cellDead = null;
 	private ArrayList<int[]> cellChangedData = new ArrayList<>();
 	private int[] cellTargetData = null;
-	private int cellSize = 10;
+	private int cellSize = 4;
     private int cellCols = 0;
     private int cellRows = 0;
     private int cellSampleSize = 0;
@@ -308,7 +418,7 @@ public class Scanner {
 		cellFrame.clearCells(5);
     }
     private void endCell() {
-    	cellFrame.updateCells(cellChangedData, cellTargetData);
+//    	cellFrame.updateCells(cellChangedData, cellTargetData);
     }
     private void showCellFrame() {
     	cellFrame.show();
@@ -425,8 +535,17 @@ public class Scanner {
 		HashMap<Integer, ArrayList<int[]>> map = new HashMap<>();
 		int midX = ((cellFrame.getWidth()  / 2) / cellSize) - 0;
 		int midY = ((cellFrame.getHeight() / 2) / cellSize) - 3;
+		
+		int csCounter = 0;
 		for (int x = 0; x < cellChangedData.size(); x++) {
 			int[] data = cellChangedData.get(x);
+			
+			String cs  = createCellRGB(data);
+			if (get(cs) < 0) {
+				csCounter++;
+				continue;
+			}
+			
 			int curX = (data[0]) / cellSize;
 			int curY = (data[1]) / cellSize;
 			int dist = Math.abs(midX - curX) + Math.abs(midY - curY);
@@ -442,6 +561,7 @@ public class Scanner {
 				result.addAll(sorted);
 			}
 		}
+		System.out.println("UNTARGETABLE: " + csCounter + " / " + UNTARGETABLE_MAP.size());
 		return result;
 	}
     
