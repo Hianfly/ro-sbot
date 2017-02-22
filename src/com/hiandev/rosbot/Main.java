@@ -1,63 +1,112 @@
 package com.hiandev.rosbot;
 
 import java.util.ArrayList;
-import java.util.Random;
+
+import com.hiandev.rosbot.EventManager.EventListener;
 import com.hiandev.rosbot.Scanner.ScannerListener;
-import com.hiandev.rosbot.ui.CellFrame;
+import com.hiandev.rosbot.ui.ScannerFrame;
 
 /**
  * @author Hian
  *
  */
-public class Main {
+public class Main implements ScannerListener, EventListener {
 	
 	public static void main(String[] args) {
+		new Main();
+	}
+	
+	Scanner      scanner = null;
+	ScannerFrame scannerFrame = null;
+	EventManager scannerEvent = null;
+	
+	public Main() {
 		try {
-			Scanner 
-			scanner = new Scanner(new CellFrame(80, 120, 800, 600));
-			scanner.setScannerListener(new MyScannerListener());
-			scanner.preapare();
+			scanner = new Scanner(80, 120, 800, 600);
+			scanner.setScannerListener(this);
+			scannerFrame = new ScannerFrame(scanner);
+			scannerEvent = new EventManager(scanner);
+			scannerEvent.setEventListener(this);
 			scanner.start();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public static class MyScannerListener implements ScannerListener {
-
-		@Override
-		public void onMoving(Scanner scanner) {
-			System.out.println("On Moving");
-		}
-		
-		@Override
-		public void onAttacking(Scanner scanner) {
-			System.out.println("On Attacking");
-		}
-		
-		@Override
-		public void onTargeting(Scanner scanner, int[] data) {
-			System.out.println("On Targeting");
-			scanner.attack();
-		}
-		
-		@Override
-		public void onIdle(Scanner scanner) {
-//			ArrayList<int[]> data = scanner.getCellChangedDataByDistance();
-//			if (data == null || data.size() == 0) {
-//				scanner.moveRandomly();
-//			}
-//			else {
-//				int index = data.size() > 50 ? 50 : data.size();
-//				while (--index >= 0) {
-//					int r = scanner.target(data.get(index));
-//					if (r == 0) {
-//						break;
-//					}
-//				}
-//			}
-		}
+	/*
+	 *
+	 * 
+	 * 
+	 */
+	
+	@Override
+	public void onStart() {
+		scannerFrame.show();
+		sleep(1000);
+	}
+	
+	@Override
+	public void onPreExecute() {
+		scannerFrame.clearCells(5);
+	}
+	
+	@Override
+	public void onPostExecute() {
+		scannerEvent.execute();
+		scannerFrame.updateCells(scanner.getCellDiff());
+	}
+	
+	@Override
+	public void onFinish() {
 		
 	}
+	
+	/*
+	 *
+	 * 
+	 * 
+	 */
+	
+	@Override
+	public int onMoving(EventManager event) {
+		return 0;
+	}
+	
+	@Override
+	public int onAttacking(EventManager event, int[] cellXY) {
+		System.out.println("On Attacking");
+		return 0;
+	}
+	
+	@Override
+	public int onTargeting(EventManager event, int[] cellXY) {
+		event.attack(cellXY);
+		return 0;
+	}
+	
+	@Override
+	public int onIdle(EventManager event) {
+		ArrayList<int[]> cellDiff = scanner.getCellDiffByDistance(25);
+		for (int[] cell : cellDiff) {
+			int t = event.target(cell);
+			if (t == 0) {
+				break;
+			}
+    	}
+		return 0;
+	}
+	
+	/*
+	 * 
+	 * 
+	 * 
+	 */
 
+    private void sleep(long time) {
+    	try {
+	    	Thread.sleep(time);
+	    } catch (Exception e) {
+	    }
+    }
+		
 }

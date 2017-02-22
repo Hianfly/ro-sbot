@@ -11,35 +11,17 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import com.hiandev.rosbot.Scanner;
 
-public class CellFrame {
+public class ScannerFrame {
 	
-    public CellFrame(int screenX, int screenY, int width, int height) {
-        this.screenX = screenX;
-        this.screenY = screenY;
-        this.width   = width;
-        this.height  = height;
-    }
-        
-    private int screenX = 40;
-    public final int getScreenX() {
-    	return screenX;
-    }
-	private int screenY = 40;
-	public final int getScreenY() {
-		return screenY;
-	}
-    private int width = 800;
-    public final int getWidth() {
-    	return width;
-    }
-    private int height = 600;
-    public final int getHeight() {
-    	return height;
+	private final Scanner scanner;
+    public ScannerFrame(Scanner scanner) {
+    	this.scanner = scanner;
     }
     
     private JFrame frame = null;
-    public final CellFrame show() {
+    public final ScannerFrame show() {
     	if (frame != null) {
     		return this;
     	}
@@ -51,18 +33,15 @@ public class CellFrame {
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
                     ex.printStackTrace();
                 }
-                frame = new JFrame("MainFrame");
+                frame = new JFrame("ScannerFrame");
                 frame.setUndecorated(true);
                 frame.setBackground(new Color(0, 0, 0, 0));
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 frame.add(mainPanel = new MainPanel());
                 frame.setAlwaysOnTop(true);
                 frame.pack();
-                frame.setLocation(screenX, screenY);
+                frame.setLocation(scanner._x, scanner._y);
                 frame.setVisible(true);
-                if (mCellFrameListener != null) {
-                	mCellFrameListener.onFrameReady();
-                }
             }
         });
     	return this;
@@ -74,7 +53,6 @@ public class CellFrame {
      * 
      */
     
-    private MainPanel framePanel = null;
     class FramePanel extends JPanel {
         public FramePanel() {
             setOpaque(false);
@@ -86,7 +64,7 @@ public class CellFrame {
         }
         @Override
         public Dimension getPreferredSize() {
-            return new Dimension(width + 200, height);
+            return new Dimension(scanner._w + 200, scanner._h);
         }
         @Override
         protected void paintComponent(Graphics g) {
@@ -118,7 +96,7 @@ public class CellFrame {
         }
         @Override
         public Dimension getPreferredSize() {
-            return new Dimension(width, height);
+            return new Dimension(scanner._w, scanner._h);
         }
         @Override
         protected void paintComponent(Graphics g) {
@@ -138,10 +116,10 @@ public class CellFrame {
      */
     
     private CellPanel cellPanel = null;
-    public final void updateCells(ArrayList<int[]> cellData, int[] targetData) {
+    public final void updateCells(ArrayList<int[]> cellDiff) {
     	clearCells(0);
-    	mainPanel.add(cellPanel = new CellPanel(cellData, targetData));
-        cellPanel.setBounds(0, 0, width, height);
+    	mainPanel.add(cellPanel = new CellPanel(cellDiff));
+        cellPanel.setBounds(0, 0, scanner._w, scanner._h);
     }
     public final void clearCells(int wait) {
     	if (cellPanel != null) {
@@ -156,11 +134,9 @@ public class CellFrame {
     	}
     }
     class CellPanel extends JPanel {
-    	private ArrayList<int[]> cellData = new ArrayList<>();
-    	private int[] targetData = null;
-        public CellPanel(ArrayList<int[]> cellData, int[] targetData) {
-        	this.cellData = cellData;
-        	this.targetData = targetData;
+    	private ArrayList<int[]> cellDiff = new ArrayList<>();
+        public CellPanel(ArrayList<int[]> cellDiff) {
+        	this.cellDiff = cellDiff;
             setOpaque(false);
             setLayout(null);
         }
@@ -170,35 +146,13 @@ public class CellFrame {
             Graphics2D g2d = (Graphics2D) g.create();
             g2d.setBackground(getBackground());
             g2d.setColor(Color.RED);
-            if (cellData != null) {
-	            for (int[] r : cellData) {
-//	            	if (r[0] < (r[1] * 4) + 1 && r[1] < (r[2] * 4) + 1) {
-//	            		continue;
-//	            	}
+            if (cellDiff != null) {
+	            for (int[] r : cellDiff) {
 	            	g2d.drawRect(r[0], r[1], r[2] - 1, r[3] - 1);
 	            }
-            }
-            if (targetData != null) {
-                g2d.setColor(Color.BLUE);
-            	g2d.drawRect(targetData[0], targetData[1], targetData[2] - 1, targetData[3] - 1);
             }
             g2d.dispose();
         }
     }
-    
-    /*
-     * 
-     * 
-     * 
-     */
-    
-    private CellFrameListener mCellFrameListener = null;
-    public void setCellFrameListener(CellFrameListener listener) {
-    	mCellFrameListener = listener;
-    }
-    public static interface CellFrameListener {
-    	public void onFrameReady();
-    }
-    
     
 }
