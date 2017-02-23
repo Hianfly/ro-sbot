@@ -1,6 +1,7 @@
 package com.hiandev.rosbot;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import com.hiandev.rosbot.EventManager.EventListener;
 import com.hiandev.rosbot.Scanner.ScannerListener;
@@ -19,14 +20,18 @@ public class Main implements ScannerListener, EventListener {
 	Scanner      scanner = null;
 	ScannerFrame scannerFrame = null;
 	EventManager scannerEvent = null;
+	CellProfiler cellProfiler = null;
+	HpSpWatcher  hpspWatcher = null;
 	
 	public Main() {
 		try {
-			scanner = new Scanner(80, 120, 800, 600);
+			scanner = new Scanner(120, 125, 800, 600);
 			scanner.setScannerListener(this);
 			scannerFrame = new ScannerFrame(scanner);
 			scannerEvent = new EventManager(scanner);
 			scannerEvent.setEventListener(this);
+			cellProfiler = new CellProfiler(scanner);
+			hpspWatcher = new HpSpWatcher(scanner);
 			scanner.start();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -43,6 +48,8 @@ public class Main implements ScannerListener, EventListener {
 	public void onStart() {
 		scannerFrame.show();
 		sleep(1000);
+		hpspWatcher.start();
+		new DumpFile(scanner).start();;
 	}
 	
 	@Override
@@ -73,27 +80,38 @@ public class Main implements ScannerListener, EventListener {
 	}
 	
 	@Override
-	public int onAttacking(EventManager event, int[] cellXY) {
-		System.out.println("On Attacking");
-		return 0;
-	}
-	
-	@Override
 	public int onTargeting(EventManager event, int[] cellXY) {
-		event.attack(cellXY);
 		return 0;
 	}
 	
 	@Override
 	public int onIdle(EventManager event) {
-		ArrayList<int[]> cellDiff = scanner.getCellDiffByDistance(25);
-		for (int[] cell : cellDiff) {
-			int t = event.target(cell);
-			if (t == 0) {
-				break;
-			}
-    	}
-		return 0;
+		int r = 0;
+//		ArrayList<int[]> cellDiff = scanner.getCellDiffByDistance(0);
+//		int removed = cellProfiler.removeNotClickable(cellDiff);
+//		if (cellDiff.size() == 0) {
+//			event.moveRandomly();
+//			return r;
+//		}
+//		int index = new Random().nextInt(cellDiff.size() > 10 ? 10 : cellDiff.size());
+//		int[] cell = cellDiff.get(index);
+//		switch (event.target(cell)) {
+//		case 0:
+//			r = 0;
+//			cellProfiler.add(cell[4], cell[5], CellProfiler.PROFILE_ATTACKABLE);
+//			event.attack(cell);
+//			break;
+//		default:
+//			r = 1;
+//			cellProfiler.add(cell[4], cell[5], CellProfiler.PROFILE_NOT_CLICKABLE);
+//			break;
+//		}
+////		System.out.println("--- AT " + cellProfiler.getList(CellProfiler.PROFILE_ATTACKABLE).size());
+////		System.out.println("--- NC " + cellProfiler.getList(CellProfiler.PROFILE_NOT_CLICKABLE).size());
+//		System.out.println("REMOVING BY SIZE >> " + removed + " LEFT >> " + cellDiff.size());
+////		System.out.println("PROFILE_ATTACKABLE\n"    + cellProfiler.toSummaryString(CellProfiler.PROFILE_ATTACKABLE));
+////		System.out.println("PROFILE_NOT_CLICKABLE\n" + cellProfiler.toSummaryString(CellProfiler.PROFILE_NOT_CLICKABLE));
+		return r;
 	}
 	
 	/*

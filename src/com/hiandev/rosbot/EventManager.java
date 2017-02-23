@@ -3,11 +3,9 @@ package com.hiandev.rosbot;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.image.Raster;
-import java.util.ArrayList;
 import java.util.Random;
 
 public class EventManager {
-
 	
 	private final Scanner scanner;
 	public EventManager(Scanner scanner) {
@@ -24,6 +22,7 @@ public class EventManager {
 	private long detectionInterval = 2000; // jangan lebih kecil dr 1 dtk untuk menghindari cellChangedData
 	private long attackingTime = 0;
 	private int  numIdleSignal = 0;
+	private int  forceExecute = 0;
 
 	/*
 	 * 
@@ -56,10 +55,11 @@ public class EventManager {
 	    	if (charMode == CHAR_MODE_ATTACKING && newMode == CHAR_MODE_IDLE && now - attackingTime > 1000) {
     			numIdleSignal = 1;
     		}
-	    	if (now - detectionTime < detectionInterval) {
+	    	if (now - detectionTime < detectionInterval && forceExecute == 0) {
 	    		return;
 	    	}
 	    	detectionTime = now;
+	    	forceExecute = 0;
 	    	/*
 	    	 * 
 	    	 */
@@ -71,7 +71,9 @@ public class EventManager {
 	    		if (newMode == CHAR_MODE_ATTACKING && numIdleSignal == 1) {
 	   	    		numIdleSignal = 0;
 		    		charMode = CHAR_MODE_IDLE;
-		    		mListener.onIdle(this);
+		    		if (!isMoving()) {
+		    			forceExecute = mListener.onIdle(this);
+		    		}
   					break P;
 	    		}
 		    	if (newMode == CHAR_MODE_TARGETING) {
@@ -81,11 +83,13 @@ public class EventManager {
 		    	}
 		    	if (newMode == CHAR_MODE_IDLE) {
 		    		charMode = CHAR_MODE_IDLE;
-		    		mListener.onIdle(this);
+		    		if (!isMoving()) {
+		    			forceExecute = mListener.onIdle(this);
+		    		}
 		    		break P;
 		    	}
 	    	}
-	    	System.out.println(oldMode + " : " + newMode + " : " + charMode + " >>> " + charMove + " : " + numIdleSignal + " : " + scanner.getCellDiff().size()  + " " + (now - attackingTime) + "ms");
+	    	System.out.println(oldMode + " : " + newMode + " : " + charMode + " >>> " + charMove + " : " + numIdleSignal + " : " + scanner.getCellDiff().size()  + " " + (now - attackingTime) + "ms " + forceExecute);
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
@@ -105,9 +109,16 @@ public class EventManager {
    				newMode = (charMode == CHAR_MODE_ATTACKING && charMove == 1) ? CHAR_MODE_ATTACKING : CHAR_MODE_IDLE;
     			break P;
     		}
+//    		if (m == CHAR_MODE_TARGETING) {
+//    			newMode = (charMode == CHAR_MODE_ATTACKING) ? CHAR_MODE_ATTACKING : CHAR_MODE_TARGETING;
+//    			break P;
+//    		}
 			newMode = m;
 		}
 		return newMode;
+	}
+	public boolean isMoving() {
+		return charMove == 1;
 	}
 	
 	/*
@@ -123,7 +134,10 @@ public class EventManager {
     	if (scanner.isMatch(MODE_TARGETING, pixels, 4, 20)) {
     		r = 0;
     		charMode = CHAR_MODE_TARGETING;
-    		mListener.onTargeting(this, cellXY);
+    	}
+    	else {
+        	scanner.mouseIdle();
+        	sleep(20);
     	}
     	return r;
     }
@@ -135,7 +149,6 @@ public class EventManager {
     	sleep(20);
     	scanner.mouseIdle();
     	sleep(20);
-		mListener.onAttacking(this, cellXY);
     	return r;
     }
     public int move(int[] cell) {
@@ -226,7 +239,6 @@ public class EventManager {
     	public int onIdle(EventManager event);
     	public int onMoving(EventManager event);
     	public int onTargeting(EventManager event, int[] cellXY);
-    	public int onAttacking(EventManager event, int[] cellXY);
 
     }
     

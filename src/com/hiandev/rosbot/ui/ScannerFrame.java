@@ -104,7 +104,27 @@ public class ScannerFrame {
             Graphics2D g2d = (Graphics2D) g.create();
             g2d.setBackground(getBackground());
             g2d.setColor(Color.GREEN);
-            g2d.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+            int x = 0;
+           	int y = 0;
+           	int w = getWidth()  - 1;
+           	int h = getHeight() - 1;
+           	g2d.drawRect(x, y, w, h);
+           	x = scanner.zoneChar[0];
+           	y = scanner.zoneChar[2];
+           	w = scanner.zoneChar[1] - scanner.zoneChar[0] - 1;
+           	h = scanner.zoneChar[3] - scanner.zoneChar[2] - 1;
+           	g2d.drawRect(x, y, w, h);
+           	x = scanner.zoneIdle[0];
+           	y = scanner.zoneIdle[2];
+           	w = scanner.zoneIdle[1] - scanner.zoneIdle[0] - 1;
+           	h = scanner.zoneIdle[3] - scanner.zoneIdle[2] - 1;
+            g2d.setColor(Color.RED);
+           	g2d.drawRect(x, y, w, h);
+           	x = scanner.zoneHpSp[0];
+           	y = scanner.zoneHpSp[2];
+           	w = scanner.zoneHpSp[1] - scanner.zoneHpSp[0] - 1;
+           	h = scanner.zoneHpSp[3] - scanner.zoneHpSp[2] - 1;
+           	g2d.drawRect(x, y, w, h);
             g2d.dispose();
         }
     }
