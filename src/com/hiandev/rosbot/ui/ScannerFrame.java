@@ -6,6 +6,7 @@ import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -37,7 +38,7 @@ public class ScannerFrame {
                 frame.setUndecorated(true);
                 frame.setBackground(new Color(0, 0, 0, 0));
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                frame.add(mainPanel = new MainPanel());
+                frame.add(new FramePanel());
                 frame.setAlwaysOnTop(true);
                 frame.pack();
                 frame.setLocation(scanner._x, scanner._y);
@@ -57,6 +58,62 @@ public class ScannerFrame {
         public FramePanel() {
             setOpaque(false);
             setLayout(null);
+            add(mainPanel = new MainPanel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    Graphics2D g2d = (Graphics2D) g.create();
+                    g2d.setBackground(getBackground());
+                    
+                    g2d.setColor(Color.GREEN);
+                    int x = 0;
+                   	int y = 0;
+                   	int w = getWidth()  - 1;
+                   	int h = getHeight() - 1;
+                   	g2d.drawRect(x, y, w, h);
+                   	x = scanner.zoneChar[0];
+                   	y = scanner.zoneChar[2];
+                   	w = scanner.zoneChar[1] - scanner.zoneChar[0] - 1;
+                   	h = scanner.zoneChar[3] - scanner.zoneChar[2] - 1;
+                   	g2d.drawRect(x, y, w, h);
+                   	
+                    g2d.setColor(Color.RED);
+                   	x = scanner.zoneIdle[0];
+                   	y = scanner.zoneIdle[2];
+                   	w = scanner.zoneIdle[1] - scanner.zoneIdle[0] - 1;
+                   	h = scanner.zoneIdle[3] - scanner.zoneIdle[2] - 1;
+                   	g2d.drawRect(x, y, w, h);
+                   	x = scanner.zoneHpSp[0];
+                   	y = scanner.zoneHpSp[2];
+                   	w = scanner.zoneHpSp[1] - scanner.zoneHpSp[0] - 1;
+                   	h = scanner.zoneHpSp[3] - scanner.zoneHpSp[2] - 1;
+                   	g2d.drawRect(x, y, w, h);
+                   	
+                   	x = scanner.zoneChat[0];
+                   	y = scanner.zoneChat[2];
+                   	w = scanner.zoneChat[1] - scanner.zoneChat[0] - 1;
+                   	h = scanner.zoneChat[3] - scanner.zoneChat[2] - 1;
+                   	g2d.drawRect(x, y, w, h);
+                    g2d.dispose();
+                }
+            });
+            mainPanel.setBounds(0, 0, scanner._w, scanner._h);
+            add(suppPanel = new MainPanel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    Graphics2D g2d = (Graphics2D) g.create();
+                    g2d.setBackground(getBackground());
+                    g2d.setColor(Color.GREEN);
+                    int x = 0;
+                   	int y = 0;
+                   	int w = getWidth()  - 1;
+                   	int h = getHeight() - 1;
+                   	g2d.drawRect(x, y, w, h);
+                    g2d.dispose();
+                }
+            });
+            suppPanel.setBounds(scanner._w, 0, scanner._w, scanner._h);
         }
         @Override
         public Point getLocation() {
@@ -64,7 +121,7 @@ public class ScannerFrame {
         }
         @Override
         public Dimension getPreferredSize() {
-            return new Dimension(scanner._w + 200, scanner._h);
+            return new Dimension(scanner._w * 2, scanner._h);
         }
         @Override
         protected void paintComponent(Graphics g) {
@@ -84,19 +141,10 @@ public class ScannerFrame {
      * 
      */
     
-    private MainPanel mainPanel = null;
-    class MainPanel extends JPanel {
-        public MainPanel() {
+    class PreviewPanel extends JPanel {
+        public PreviewPanel() {
             setOpaque(false);
             setLayout(null);
-        }
-        @Override
-        public Point getLocation() {
-        	return new Point(0, 0);
-        }
-        @Override
-        public Dimension getPreferredSize() {
-            return new Dimension(scanner._w, scanner._h);
         }
         @Override
         protected void paintComponent(Graphics g) {
@@ -109,23 +157,25 @@ public class ScannerFrame {
            	int w = getWidth()  - 1;
            	int h = getHeight() - 1;
            	g2d.drawRect(x, y, w, h);
-           	x = scanner.zoneChar[0];
-           	y = scanner.zoneChar[2];
-           	w = scanner.zoneChar[1] - scanner.zoneChar[0] - 1;
-           	h = scanner.zoneChar[3] - scanner.zoneChar[2] - 1;
-           	g2d.drawRect(x, y, w, h);
-           	x = scanner.zoneIdle[0];
-           	y = scanner.zoneIdle[2];
-           	w = scanner.zoneIdle[1] - scanner.zoneIdle[0] - 1;
-           	h = scanner.zoneIdle[3] - scanner.zoneIdle[2] - 1;
-            g2d.setColor(Color.RED);
-           	g2d.drawRect(x, y, w, h);
-           	x = scanner.zoneHpSp[0];
-           	y = scanner.zoneHpSp[2];
-           	w = scanner.zoneHpSp[1] - scanner.zoneHpSp[0] - 1;
-           	h = scanner.zoneHpSp[3] - scanner.zoneHpSp[2] - 1;
-           	g2d.drawRect(x, y, w, h);
             g2d.dispose();
+        }
+    }
+    public final void updatePreview() {
+    	
+    }
+    
+    /*
+     * 
+     * 
+     * 
+     */
+    
+    private MainPanel mainPanel = null;
+    private MainPanel suppPanel = null;
+    class MainPanel extends JPanel {
+        public MainPanel() {
+            setOpaque(false);
+            setLayout(null);
         }
     }
     

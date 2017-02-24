@@ -7,9 +7,14 @@ import java.awt.PointerInfo;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.event.InputEvent;
+import java.awt.image.DataBufferByte;
 import java.awt.image.Raster;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 
 public class Scanner {
 
@@ -31,16 +36,17 @@ public class Scanner {
 		this.cellDead = new int[cellCols][cellRows];
 		this.cellConvLevels = createCellConvLevels();
 		this.zoneChar = new int[] {
-	    		(_w / 2) - 40,
-	    		(_w / 2) + 40,
-	    		(_h / 2) - 90,
-	    		(_h / 2) + 20
+	    		(_w / 2) -  30,
+	    		(_w / 2) +  30,
+	    		(_h / 2) -  80,
+	    		(_h / 2) +  10 + 5
 	    };
+		this.zoneChat = new int[] { 0, 600, 500, 599 }; 
 		this.zoneHpSp = new int[] {
 	    		(_w / 2) - 30,
 	    		(_w / 2) + 30,
-	    		(_h / 2) + 15,
-	    		(_h / 2) + 25
+	    		(_h / 2) + 10,
+	    		(_h / 2) + 20
 	    };
 		this.zoneIdle = new int[] { 0, 30, 0, 40 };
     }
@@ -77,6 +83,7 @@ public class Scanner {
     public final int[] zoneChar;
     public final int[] zoneIdle;
     public final int[] zoneHpSp;
+    public final int[] zoneChat;
     private void prepareCellDead() {
     	for (int x = zoneChar[0]; x < zoneChar[1]; x++) {
     		for (int y = zoneChar[2]; y < zoneChar[3]; y++) {
@@ -86,6 +93,11 @@ public class Scanner {
     	for (int x = zoneIdle[0]; x < zoneIdle[1]; x++) {
     		for (int y = zoneIdle[2]; y < zoneIdle[3]; y++) {
     	    	cellDead[x / cellSize][y / cellSize] = 1;
+    		}
+    	}
+    	for (int x = zoneChat[0]; x < zoneChat[1]; x++) {
+    		for (int y = zoneChat[2]; y < zoneChat[3]; y++) {
+    			cellDead[x / cellSize][y / cellSize] = 1;
     		}
     	}
     }
@@ -313,11 +325,16 @@ public class Scanner {
 		return screenRaster;
 	}
     public Raster captureScreen() {
+    	 Mat mat = new Mat(screenRaster.getHeight(), screenRaster.getWidth(), CvType.CV_8UC3);
+    	 byte[] data = ((DataBufferByte) screenRaster.getDataBuffer()).getData();
+    	 mat.put(0, 0, data);
+//    	 Imgproc.bilateralFilter(src, dst, d, sigmaColor, sigmaSpace);
+    	
 	    return robot.createScreenCapture(new Rectangle(_x, _y, _w, _h)).getData();
     }
 	public void mouseIdle() {
-    	robot.mouseMove(_x + 1, _y + 1);
-//    	robot.mouseMove(_x + (_w / 2), _y + (_h / 2) + (dzBgnY / 2));
+//    	robot.mouseMove(_x + 1, _y + 1);
+    	robot.mouseMove(_x + 1 + 60, _y + zoneChat[2] + 1 + 10);
     }
 	public void mouseClick() {
     	robot.mousePress(InputEvent.BUTTON1_MASK);

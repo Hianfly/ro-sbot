@@ -25,7 +25,7 @@ public class Main implements ScannerListener, EventListener {
 	
 	public Main() {
 		try {
-			scanner = new Scanner(120, 125, 800, 600);
+			scanner = new Scanner(5, 30, 800, 600);
 			scanner.setScannerListener(this);
 			scannerFrame = new ScannerFrame(scanner);
 			scannerEvent = new EventManager(scanner);
@@ -49,7 +49,7 @@ public class Main implements ScannerListener, EventListener {
 		scannerFrame.show();
 		sleep(1000);
 		hpspWatcher.start();
-		new DumpFile(scanner).start();;
+//		new DumpFile(scanner).start();;
 	}
 	
 	@Override
@@ -59,6 +59,7 @@ public class Main implements ScannerListener, EventListener {
 	
 	@Override
 	public void onPostExecute() {
+//		scannerFrame.updatePreview(scanner.getCellDiff());
 		scannerEvent.execute();
 		scannerFrame.updateCells(scanner.getCellDiff());
 	}
@@ -87,30 +88,30 @@ public class Main implements ScannerListener, EventListener {
 	@Override
 	public int onIdle(EventManager event) {
 		int r = 0;
-//		ArrayList<int[]> cellDiff = scanner.getCellDiffByDistance(0);
-//		int removed = cellProfiler.removeNotClickable(cellDiff);
-//		if (cellDiff.size() == 0) {
-//			event.moveRandomly();
-//			return r;
-//		}
-//		int index = new Random().nextInt(cellDiff.size() > 10 ? 10 : cellDiff.size());
-//		int[] cell = cellDiff.get(index);
-//		switch (event.target(cell)) {
-//		case 0:
-//			r = 0;
-//			cellProfiler.add(cell[4], cell[5], CellProfiler.PROFILE_ATTACKABLE);
-//			event.attack(cell);
-//			break;
-//		default:
-//			r = 1;
-//			cellProfiler.add(cell[4], cell[5], CellProfiler.PROFILE_NOT_CLICKABLE);
-//			break;
-//		}
-////		System.out.println("--- AT " + cellProfiler.getList(CellProfiler.PROFILE_ATTACKABLE).size());
-////		System.out.println("--- NC " + cellProfiler.getList(CellProfiler.PROFILE_NOT_CLICKABLE).size());
-//		System.out.println("REMOVING BY SIZE >> " + removed + " LEFT >> " + cellDiff.size());
-////		System.out.println("PROFILE_ATTACKABLE\n"    + cellProfiler.toSummaryString(CellProfiler.PROFILE_ATTACKABLE));
-////		System.out.println("PROFILE_NOT_CLICKABLE\n" + cellProfiler.toSummaryString(CellProfiler.PROFILE_NOT_CLICKABLE));
+		ArrayList<int[]> cellDiff = scanner.getCellDiffByDistance(0);
+		int removed = cellProfiler.removeNotClickable(cellDiff);
+		if (cellDiff.size() == 0) {
+			event.moveRandomly();
+			return r;
+		}
+		int index = new Random().nextInt(cellDiff.size() > 10 ? 10 : cellDiff.size());
+		int[] cell = cellDiff.get(index);
+		switch (event.target(cell)) {
+		case 0:
+			r = 0;
+			cellProfiler.add(cell[4], cell[5], CellProfiler.PROFILE_ATTACKABLE);
+			event.attack(cell);
+			break;
+		default:
+			r = 1;
+			cellProfiler.add(cell[4], cell[5], CellProfiler.PROFILE_NOT_CLICKABLE);
+			break;
+		}
+//		System.out.println("--- AT " + cellProfiler.getList(CellProfiler.PROFILE_ATTACKABLE).size());
+//		System.out.println("--- NC " + cellProfiler.getList(CellProfiler.PROFILE_NOT_CLICKABLE).size());
+		System.out.println("REMOVING BY SIZE >> " + removed + " LEFT >> " + cellDiff.size());
+//		System.out.println("PROFILE_ATTACKABLE\n"    + cellProfiler.toSummaryString(CellProfiler.PROFILE_ATTACKABLE));
+//		System.out.println("PROFILE_NOT_CLICKABLE\n" + cellProfiler.toSummaryString(CellProfiler.PROFILE_NOT_CLICKABLE));
 		return r;
 	}
 	
