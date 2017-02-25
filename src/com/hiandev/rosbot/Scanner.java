@@ -8,16 +8,22 @@ import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.event.InputEvent;
 import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferFloat;
+import java.awt.image.DataBufferInt;
 import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
 public class Scanner {
 
+	static{ System.loadLibrary(Core.NATIVE_LIBRARY_NAME); }
+	
     public final int _x;
     public final int _y;
     public final int _w;
@@ -74,6 +80,8 @@ public class Scanner {
 	}
 	public void execute() {
 		screenRaster = captureScreen();
+
+   	
 	    convertScreenRasterToCellData();
 	    convertCellDiffToCellConv();
 	}
@@ -117,7 +125,7 @@ public class Scanner {
     private int cellRows = 0;
     private int cellPixelSize = 0;
     private int cellChangeThreshold = 10;
-	private int cellShrinkThreshold = 1; 
+	private int cellShrinkThreshold = 200; 
     private int cellMatchThreshold  = 10;
 	private boolean isCellDataChanged(int cellX, int cellY, int[] samples) {
 		boolean b = false;
@@ -145,12 +153,6 @@ public class Scanner {
 				}
 				else {
 					int[] cellPixels = shrinkCellData(screenRaster.getPixels(x, y, cellSize, cellSize, new int[cellPixelSize]));
-					
-//					Point point = MouseInfo.getPointerInfo().getLocation();
-//				  	int mx = cellX - (((int) point.getX() - _x) / cellSize);
-//				  	int my = cellY - (((int) point.getY() - _y) / cellSize);
-//				  	boolean mouse = (mx >= 0 && mx <= 2) && (my >= 0 && my <= 3) ;
-					
 				  	if (isCellDataChanged(cellX, cellY, cellPixels)) {
 						cellDiff.add(new int[] { x, y, cellSize, cellSize, cellX, cellY });
 					}
@@ -320,17 +322,12 @@ public class Scanner {
 	 */
 
 	private Robot robot = null;
-	private Raster screenRaster = null;
-	public Raster getScreenRaster() {
+	private WritableRaster screenRaster = null;
+	public WritableRaster getScreenRaster() {
 		return screenRaster;
 	}
-    public Raster captureScreen() {
-    	 Mat mat = new Mat(screenRaster.getHeight(), screenRaster.getWidth(), CvType.CV_8UC3);
-    	 byte[] data = ((DataBufferByte) screenRaster.getDataBuffer()).getData();
-    	 mat.put(0, 0, data);
-//    	 Imgproc.bilateralFilter(src, dst, d, sigmaColor, sigmaSpace);
-    	
-	    return robot.createScreenCapture(new Rectangle(_x, _y, _w, _h)).getData();
+    public WritableRaster captureScreen() {
+	    return (WritableRaster) robot.createScreenCapture(new Rectangle(_x, _y, _w, _h)).getRaster();
     }
 	public void mouseIdle() {
 //    	robot.mouseMove(_x + 1, _y + 1);

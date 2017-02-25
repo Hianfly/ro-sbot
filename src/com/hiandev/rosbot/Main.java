@@ -107,11 +107,7 @@ public class Main implements ScannerListener, EventListener {
 			cellProfiler.add(cell[4], cell[5], CellProfiler.PROFILE_NOT_CLICKABLE);
 			break;
 		}
-//		System.out.println("--- AT " + cellProfiler.getList(CellProfiler.PROFILE_ATTACKABLE).size());
-//		System.out.println("--- NC " + cellProfiler.getList(CellProfiler.PROFILE_NOT_CLICKABLE).size());
 		System.out.println("REMOVING BY SIZE >> " + removed + " LEFT >> " + cellDiff.size());
-//		System.out.println("PROFILE_ATTACKABLE\n"    + cellProfiler.toSummaryString(CellProfiler.PROFILE_ATTACKABLE));
-//		System.out.println("PROFILE_NOT_CLICKABLE\n" + cellProfiler.toSummaryString(CellProfiler.PROFILE_NOT_CLICKABLE));
 		return r;
 	}
 	
