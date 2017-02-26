@@ -4,8 +4,8 @@ import java.awt.image.Raster;
 
 public class HpSpWatcher{
 	
-	private Scanner scanner;
-	public HpSpWatcher(Scanner scanner) {
+	private ScannerXz scanner;
+	public HpSpWatcher(ScannerXz scanner) {
 		this.scanner = scanner;
 	}
 	

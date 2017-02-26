@@ -6,13 +6,13 @@ import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.image.WritableRaster;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import com.hiandev.rosbot.Scanner;
+import com.hiandev.rosbot.scanner.Scanner;
 
 public class ScannerFrame {
 	
@@ -71,29 +71,29 @@ public class ScannerFrame {
                    	int w = getWidth()  - 1;
                    	int h = getHeight() - 1;
                    	g2d.drawRect(x, y, w, h);
-                   	x = scanner.zoneChar[0];
-                   	y = scanner.zoneChar[2];
-                   	w = scanner.zoneChar[1] - scanner.zoneChar[0] - 1;
-                   	h = scanner.zoneChar[3] - scanner.zoneChar[2] - 1;
-                   	g2d.drawRect(x, y, w, h);
-                   	
-                    g2d.setColor(Color.RED);
-                   	x = scanner.zoneIdle[0];
-                   	y = scanner.zoneIdle[2];
-                   	w = scanner.zoneIdle[1] - scanner.zoneIdle[0] - 1;
-                   	h = scanner.zoneIdle[3] - scanner.zoneIdle[2] - 1;
-                   	g2d.drawRect(x, y, w, h);
-                   	x = scanner.zoneHpSp[0];
-                   	y = scanner.zoneHpSp[2];
-                   	w = scanner.zoneHpSp[1] - scanner.zoneHpSp[0] - 1;
-                   	h = scanner.zoneHpSp[3] - scanner.zoneHpSp[2] - 1;
-                   	g2d.drawRect(x, y, w, h);
-                   	
-                   	x = scanner.zoneChat[0];
-                   	y = scanner.zoneChat[2];
-                   	w = scanner.zoneChat[1] - scanner.zoneChat[0] - 1;
-                   	h = scanner.zoneChat[3] - scanner.zoneChat[2] - 1;
-                   	g2d.drawRect(x, y, w, h);
+//                   	x = scanner.zoneChar[0];
+//                   	y = scanner.zoneChar[2];
+//                   	w = scanner.zoneChar[1] - scanner.zoneChar[0] - 1;
+//                   	h = scanner.zoneChar[3] - scanner.zoneChar[2] - 1;
+//                   	g2d.drawRect(x, y, w, h);
+//                   	
+//                    g2d.setColor(Color.RED);
+//                   	x = scanner.zoneIdle[0];
+//                   	y = scanner.zoneIdle[2];
+//                   	w = scanner.zoneIdle[1] - scanner.zoneIdle[0] - 1;
+//                   	h = scanner.zoneIdle[3] - scanner.zoneIdle[2] - 1;
+//                   	g2d.drawRect(x, y, w, h);
+//                   	x = scanner.zoneHpSp[0];
+//                   	y = scanner.zoneHpSp[2];
+//                   	w = scanner.zoneHpSp[1] - scanner.zoneHpSp[0] - 1;
+//                   	h = scanner.zoneHpSp[3] - scanner.zoneHpSp[2] - 1;
+//                   	g2d.drawRect(x, y, w, h);
+//                   	
+//                   	x = scanner.zoneChat[0];
+//                   	y = scanner.zoneChat[2];
+//                   	w = scanner.zoneChat[1] - scanner.zoneChat[0] - 1;
+//                   	h = scanner.zoneChat[3] - scanner.zoneChat[2] - 1;
+//                   	g2d.drawRect(x, y, w, h);
                     g2d.dispose();
                 }
             });
@@ -140,9 +140,12 @@ public class ScannerFrame {
      * 
      * 
      */
-    
+
+    private PreviewPanel previewPanel = null;
     class PreviewPanel extends JPanel {
-        public PreviewPanel() {
+    	private BufferedImage image = null;
+        public PreviewPanel(BufferedImage image) {
+        	this.image = image;
             setOpaque(false);
             setLayout(null);
         }
@@ -152,16 +155,26 @@ public class ScannerFrame {
             Graphics2D g2d = (Graphics2D) g.create();
             g2d.setBackground(getBackground());
             g2d.setColor(Color.GREEN);
-            int x = 0;
-           	int y = 0;
-           	int w = getWidth()  - 1;
-           	int h = getHeight() - 1;
-           	g2d.drawRect(x, y, w, h);
+           	g2d.drawImage(image, 0, 0, null);
             g2d.dispose();
         }
     }
-    public final void updatePreview() {
-    	
+    public final void updatePreview(BufferedImage image) {
+    	clearPreview(0);
+    	suppPanel.add(previewPanel = new PreviewPanel(image));
+    	previewPanel.setBounds(0, 0, scanner._w, scanner._h);
+    }
+    public final void clearPreview(int wait) {
+    	if (previewPanel != null) {
+    		suppPanel.remove(previewPanel);
+    		suppPanel.repaint();
+	    	if (wait > 0) {
+	    		try {
+	    			Thread.sleep(wait);
+	    		} catch (Exception e) {
+	    		}
+	    	}
+    	}
     }
     
     /*

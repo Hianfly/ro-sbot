@@ -5,10 +5,12 @@ import java.awt.Point;
 import java.awt.image.Raster;
 import java.util.Random;
 
+import com.hiandev.rosbot.scanner.Scanner;
+
 public class EventManager {
 	
-	private final Scanner scanner;
-	public EventManager(Scanner scanner) {
+	private final ScannerXz scanner;
+	public EventManager(ScannerXz scanner) {
 		this.scanner = scanner;
 	}
     

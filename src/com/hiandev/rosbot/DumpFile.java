@@ -26,8 +26,8 @@ public class DumpFile{
 
 	static{ System.loadLibrary(Core.NATIVE_LIBRARY_NAME); }
 	
-	private Scanner scanner;
-	public DumpFile(Scanner scanner) {
+	private ScannerXz scanner;
+	public DumpFile(ScannerXz scanner) {
 		this.scanner = scanner;
 	}
 	

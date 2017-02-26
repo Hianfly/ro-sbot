@@ -15,8 +15,8 @@ public class CellProfiler {
 	public static final int PROFILE_ATTACKABLE = 5;
 	public static final int PROFILE_NOT_CLICKABLE = 6;
 	
-	private Scanner scanner = null;
-	public CellProfiler(Scanner scanner) {
+	private ScannerXz scanner = null;
+	public CellProfiler(ScannerXz scanner) {
 		this.scanner = scanner;
 	}
 	
