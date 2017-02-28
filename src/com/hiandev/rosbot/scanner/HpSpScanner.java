@@ -24,7 +24,7 @@ public class HpSpScanner extends Scanner {
 				pixels[r] = floorPixels(getScreenImage().getRaster().getPixels(0, r, _w, 1, (int[]) null), 10);
 			}
 			int last = 0;
-			for (int c = 0; c < _w * 3; c += 3) {
+			for (int c = 0; c < _w * 3; c += 3) { 
 				for (int r = 0; r < _h; r += 1) {
 					if (Math.abs(pixels[r][c + 0] -  10) <= 20 &&
 						Math.abs(pixels[r][c + 1] - 230) <= 20 &&
