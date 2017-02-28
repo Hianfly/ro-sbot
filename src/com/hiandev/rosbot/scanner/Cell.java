@@ -8,14 +8,12 @@ public class Cell {
 	public final int _y;
 	public final int[]   averagePixels = new int[] { -1, -1, -1 };
 	public final int[][] pixels;
-	public final int prmFloorThreshold;
 
 	public long averageKey = 0;
 	
-	public Cell(int _x, int _y, int[] samples, int prmFloorThreshold) {
+	public Cell(int _x, int _y, int[] samples) {
 		this._x = _x;
 		this._y = _y;
-		this.prmFloorThreshold = prmFloorThreshold;
 		this.pixels = new int[SIZE][SIZE * 3];
 		int[] buffer = new int[3];
 		int   index  = 0;
@@ -27,9 +25,9 @@ public class Cell {
     		}
 		}
 		int divider = Cell.SIZE * Cell.SIZE;
-		averagePixels[0] = ((buffer[0] / divider) / prmFloorThreshold) * prmFloorThreshold;
-		averagePixels[1] = ((buffer[1] / divider) / prmFloorThreshold) * prmFloorThreshold;
-		averagePixels[2] = ((buffer[2] / divider) / prmFloorThreshold) * prmFloorThreshold;
+		averagePixels[0] = buffer[0] / divider;
+		averagePixels[1] = buffer[1] / divider;
+		averagePixels[2] = buffer[2] / divider;
 	}
 	
 	public final void createWhitePixels(boolean average) {
@@ -47,7 +45,7 @@ public class Cell {
 		}
 	}
 	
-	public final void createAveragePixels(boolean changePixels) {
+	public final void createAveragePixels(boolean changePixels, int prmFloorThreshold) {
 		int divider = Cell.SIZE * Cell.SIZE;
 		int[] rgb = new int[3];
 		for (int i = 0; i < pixels.length; i += 1) {

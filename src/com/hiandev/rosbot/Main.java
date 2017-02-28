@@ -86,6 +86,13 @@ public class Main {
 		}
 		
 		@Override
+		protected int onPick(BattleEvent event) {
+			int forceRetry = super.onPick(event);
+			event.pick();
+			return forceRetry;
+		}
+		
+		@Override
 		public int onIdle(BattleEvent event) {
 			int forceRetry = 0;
 			Point point = MouseInfo.getPointerInfo().getLocation();
@@ -144,15 +151,15 @@ public class Main {
 		@Override
 		public void onHpChanged(int percentage) {
 			super.onHpChanged(percentage);
-			if (percentage < 40) {
+			if (percentage < 35) {
 				System.out.println("HP CHANGED >>> " + percentage);
 				long now = System.currentTimeMillis();
-				if (now - lastFlyWingTime > 2000) {
+				if (now - lastFlyWingTime > 5000) {
 					lastFlyWingTime = now;
 					getScanner().keyPush(KeyEvent.VK_Z);
 				}
 			}
-			if (percentage < 60) {
+			if (percentage < 75) {
 				System.out.println("HP CHANGED >>> " + percentage);
 				getScanner().keyPush(KeyEvent.VK_X);
 			}
