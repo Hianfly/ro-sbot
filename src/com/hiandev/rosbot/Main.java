@@ -9,6 +9,7 @@ import java.util.Random;
 import com.hiandev.rosbot.event.BattleEvent;
 import com.hiandev.rosbot.event.HpSpEvent;
 import com.hiandev.rosbot.profiler.BattleProfiler;
+import com.hiandev.rosbot.profiler.ProfilerDumper;
 import com.hiandev.rosbot.scanner.BattleScanner;
 import com.hiandev.rosbot.scanner.Cell;
 import com.hiandev.rosbot.scanner.HpSpScanner;
@@ -24,12 +25,12 @@ public class Main {
 		new Main();
 	}
 	
-	ScannerFrame scannerFrame = null;
+	ScannerFrame      scannerFrame = null;
 	MainBattleScanner battleScanner = null;
-	MainBattleEvent   battleEvent   = null;
-	MainHpSpScanner hpspScanner = null;
-	MainHpSpEvent hpspEvent = null;
-//	HpSpWatcher  hpspWatcher = null;
+	MainBattleEvent   battleEvent = null;
+	MainHpSpScanner   hpspScanner = null;
+	MainHpSpEvent     hpspEvent = null;
+	ProfilerDumper    profilerDumper = null;
 	
 	public Main() {
 		try {
@@ -38,10 +39,11 @@ public class Main {
 			scannerFrame   = new ScannerFrame(battleScanner);
 			hpspScanner    = new MainHpSpScanner(5, 30);
 			hpspEvent      = new MainHpSpEvent(hpspScanner);
-//			scannerEvent.setEventListener(this);
-//			hpspWatcher = new HpSpWatcher(scanner);
+			profilerDumper = new ProfilerDumper();
 			battleScanner.start();
 			hpspScanner.start();
+			profilerDumper.addProfiler(battleScanner.getBattleProfiler());
+			profilerDumper.start();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
