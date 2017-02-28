@@ -136,7 +136,7 @@ public class BattleScanner extends Scanner {
     private void createNeutralCellMatrix() {
     	// Battle Msg
     	for (int x = 100; x < 120; x++) {
-    		for (int y = 0; y < 120; y++) {
+    		for (int y = 0; y < 160; y++) {
     	    	neutralCellMatrix[x][y] = 1;
     		}
     	}
@@ -154,18 +154,18 @@ public class BattleScanner extends Scanner {
     	}
     	// Cash Shop
     	for (int x = 5; x < 18; x++) {
-    		for (int y = 118; y < 130; y++) {
+    		for (int y = 118; y < 131; y++) {
     	    	neutralCellMatrix[x][y] = 1;
     		}
     	}
     	// Map
-    	for (int x = 7; x < 33; x++) {
+    	for (int x = 5; x < 33; x++) {
     		for (int y = 133; y < 157; y++) {
     	    	neutralCellMatrix[x][y] = 1;
     		}
     	}
     	// Buff List
-    	for (int x = 33; x < 80; x++) {
+    	for (int x = 33; x < 120; x++) {
     		for (int y = 150; y < 157; y++) {
     	    	neutralCellMatrix[x][y] = 1;
     		}

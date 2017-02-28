@@ -60,6 +60,7 @@ public class Main {
 			boolean start = super.onStart();
 			scannerFrame.show();
 			sleep(1000);
+			getBattleProfiler().load();
 			return start;
 		}
 		
