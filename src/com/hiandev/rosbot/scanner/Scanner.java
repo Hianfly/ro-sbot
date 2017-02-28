@@ -4,43 +4,27 @@ import java.awt.AWTException;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import com.hiandev.rosbot.Service;
 
-public abstract class Scanner {
+public abstract class Scanner extends Service {
 	
     public Scanner(int _x, int _y, int _w, int _h) throws AWTException {
     	this._x = _x;
     	this._y = _y;
     	this._w = _w;
     	this._h = _h;
-    	this.interval = 1;
     	this.robot = new Robot();
     }
-
-    /*
-     * 
-     * 
-     * 
-     */
-    public boolean onStart() {
-		return true;
-	}
-	public void onPreExecute() {
-		
-	}
-	protected void onExecute() {
+    
+    @Override
+    protected void onExecute() {
+    	super.onExecute();
 		BufferedImage buffer = captureScreenImage();
 		synchronized (this) {
 			screenImage = buffer;
 		}
-	}
-	public void onPostExecute() {
-		
-	}
-	public void onFinish() {
-		
-	}
+    }
 	
 	/*
 	 * 
@@ -68,44 +52,6 @@ public abstract class Scanner {
     public BufferedImage captureScreenImage() {
 	    return robot.createScreenCapture(new Rectangle(_x, _y, _w, _h));
     }
-    
-	/*
-	 * 
-	 * 
-	 * 
-	 */
-    private boolean running = false;
-	private Thread thread = null;
-	private Thread getThread() {
-		return new Thread(new Runnable() {
-			@Override
-			public void run() {
-				running = onStart();
-				while (running) {
-					onPreExecute();
-					onExecute();
-					onPostExecute();
-				    sleep(interval);
-				}
-				onFinish();
-			}
-		});
-	}
-	public long interval;
-	private boolean started = false;
-	public void start() {
-		if (started) {
-			
-		}
-		else {
-			started = true;
-			thread = getThread();
-			thread.start();
-		}
-	}
-	public void stop() {
-		running = false;
-	}
 
 	/*
 	 * 
@@ -140,11 +86,5 @@ public abstract class Scanner {
 		}
 		return samples;
 	}
-    protected void sleep(long time) {
-    	try {
-	    	Thread.sleep(time);
-	    } catch (Exception e) {
-	    }
-    }
     
 }

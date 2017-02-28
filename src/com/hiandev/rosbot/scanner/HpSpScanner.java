@@ -6,7 +6,7 @@ public class HpSpScanner extends Scanner {
 
     public HpSpScanner(int _x, int _y) throws AWTException {
     	super (_x + ((800 / 2) - 80), _y + ((600 / 2) - 30), 160, 80);
-    	interval = 50;
+    	setInterval(50);
     }
     
     /*

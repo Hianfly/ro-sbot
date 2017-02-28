@@ -22,6 +22,7 @@ public class BattleScanner extends Scanner {
     	this.battleProviler    = new BattleProfiler();
     	this.cellMatrix        = new Cell[_h / Cell.SIZE][_w / Cell.SIZE];
     	this.neutralCellMatrix = new int [_h / Cell.SIZE][_w / Cell.SIZE];
+    	setInterval(10);
     }
     
     /*
