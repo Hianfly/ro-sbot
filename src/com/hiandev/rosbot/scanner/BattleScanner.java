@@ -153,8 +153,8 @@ public class BattleScanner extends Scanner {
     		}
     	}
     	// Cash Shop
-    	for (int x = 6; x < 16; x++) {
-    		for (int y = 119; y < 129; y++) {
+    	for (int x = 5; x < 18; x++) {
+    		for (int y = 118; y < 130; y++) {
     	    	neutralCellMatrix[x][y] = 1;
     		}
     	}
