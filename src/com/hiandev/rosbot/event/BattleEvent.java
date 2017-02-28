@@ -89,7 +89,6 @@ public class BattleEvent extends Event<BattleScanner> {
 	    		}
 		    	if (newMode == CHAR_MODE_TARGETING) {
 		    		charMode = CHAR_MODE_TARGETING;
-//		    		listener.onTargeting(this, cellXY);
 		    		break P;
 		    	}
 		    	if (newMode == CHAR_MODE_IDLE) {
@@ -100,7 +99,7 @@ public class BattleEvent extends Event<BattleScanner> {
 		    		break P;
 		    	}
 	    	}
-//	    	System.out.println(oldMode + " : " + newMode + " : " + charMode + " >>> " + charMove + " : " + numIdleSignal + " : " + " " + (now - attackingTime) + "ms " + forceExecute);
+	    	System.out.println(oldMode + " : " + newMode + " : " + charMode + " >>> " + charMove + " : " + numIdleSignal + " : " + " " + (now - attackingTime) + "ms " + forceExecute);
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
@@ -109,7 +108,7 @@ public class BattleEvent extends Event<BattleScanner> {
 		int newMode = -1;
 		int m = isMatch(MODE_TARGETING, pixels, 4, 20) ? CHAR_MODE_TARGETING : 
 			    isMatch(MODE_ATTACKING, pixels, 4, 20) ? CHAR_MODE_ATTACKING : 
-				isMatch(MODE_PICKING,      pixels, 4, 20) ? CHAR_MODE_ATTACKING : 
+				isMatch(MODE_PICKING,   pixels, 4, 20) ? CHAR_MODE_PICKING   : 
 	          	CHAR_MODE_IDLE;
 		P : {
     		if (m == CHAR_MODE_ATTACKING) {
@@ -131,6 +130,9 @@ public class BattleEvent extends Event<BattleScanner> {
 	protected int onIdle(BattleEvent event) {
 		return 0;
 	}
+	protected int onPick(BattleEvent event) {
+		return 0;
+	}
 	
 	/*
 	 * 
@@ -147,11 +149,14 @@ public class BattleEvent extends Event<BattleScanner> {
     		getScanner().getBattleProfiler().add(cell, BattleProfiler.PROFILE_TARGETABLE);
     	}
     	else if (isMatch(MODE_PICKING, pixels, 4, 20)) {
-    		r = charMode = CHAR_MODE_TARGETING;
+    		r = charMode = CHAR_MODE_PICKING;
     		getScanner().getBattleProfiler().add(cell, BattleProfiler.PROFILE_PICKABLE);
     	}
     	else {
-    		getScanner().getBattleProfiler().add(cell, BattleProfiler.PROFILE_NOT_CLICKABLE);
+    		long now = System.currentTimeMillis();
+    		if (now - attackingTime > 1500) {
+    			getScanner().getBattleProfiler().add(cell, BattleProfiler.PROFILE_NOT_CLICKABLE);
+    		}
     		getScanner().mouseIdle();
         	sleep(20);
     	}
@@ -170,11 +175,12 @@ public class BattleEvent extends Event<BattleScanner> {
     public int pick() {
     	int r = 0;
     	attackingTime = System.currentTimeMillis();
-    	charMode = CHAR_MODE_ATTACKING;
+    	charMode = CHAR_MODE_PICKING;
     	getScanner().mouseLeftClick();
     	sleep(20);
     	getScanner().mouseIdle();
     	sleep(20);
+    	charMode = CHAR_MODE_IDLE;
     	return r;
     }
     public int move(Cell cell) {

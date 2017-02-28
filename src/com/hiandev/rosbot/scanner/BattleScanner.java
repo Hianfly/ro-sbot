@@ -90,7 +90,7 @@ public class BattleScanner extends Scanner {
 		for (int r = 0; r < cellMatrix.length; r++) {
 			for (int c = 0; c < cellMatrix[r].length; c++) {
 				int[]    samples = getScreenImage().getRaster().getPixels(c * Cell.SIZE, r * Cell.SIZE, Cell.SIZE, Cell.SIZE, (int[]) null);
-				cellMatrix[r][c] = new Cell(c, r, floorPixels(samples, prmFloorThreshold), 5);
+				cellMatrix[r][c] = new Cell(c, r, floorPixels(samples, prmFloorThreshold));
 			}
 		}
 	}
@@ -147,13 +147,13 @@ public class BattleScanner extends Scanner {
     	}
     	// Toa
     	for (int x = 10; x < 18; x++) {
-    		for (int y = 30; y < 130; y++) {
+    		for (int y = 29; y < 131; y++) {
     	    	neutralCellMatrix[x][y] = 1;
     		}
     	}
     	// Cash Shop
-    	for (int x = 7; x < 16; x++) {
-    		for (int y = 120; y < 129; y++) {
+    	for (int x = 6; x < 16; x++) {
+    		for (int y = 119; y < 129; y++) {
     	    	neutralCellMatrix[x][y] = 1;
     		}
     	}
@@ -164,7 +164,7 @@ public class BattleScanner extends Scanner {
     		}
     	}
     	// Buff List
-    	for (int x = 33; x < 75; x++) {
+    	for (int x = 33; x < 80; x++) {
     		for (int y = 150; y < 157; y++) {
     	    	neutralCellMatrix[x][y] = 1;
     		}
@@ -246,7 +246,12 @@ public class BattleScanner extends Scanner {
 					continue;
 				}
 				boolean dark = isDark(cellMatrix[x][y]);
-				cellMatrix[x][y].createAveragePixels(!dark);
+				if (dark) {
+					cellMatrix[x][y].createAveragePixels(false, 5);
+				}
+				else {
+					cellMatrix[x][y].createAveragePixels(true,  5);	
+				}
 			}
 		}
     }
