@@ -151,7 +151,7 @@ public class Main {
 		@Override
 		public void onHpChanged(int percentage) {
 			super.onHpChanged(percentage);
-			if (percentage < 35) {
+			if (percentage < 15) {
 				System.out.println("HP CHANGED >>> " + percentage);
 				long now = System.currentTimeMillis();
 				if (now - lastFlyWingTime > 5000) {
