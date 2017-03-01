@@ -129,7 +129,7 @@ public class BattleProfiler extends Profiler {
 				StringBuilder sb = new StringBuilder();
 				sb.append(key).append(",");
 				for (int v : val) {
-					sb.append(Text.lpad(v, 3, ' '));
+					sb.append(Text.lpad(v, 3, ' ')).append(",");
 				}
 				sb.deleteCharAt(sb.length() - 1);
 				writer.write(sb.toString());
