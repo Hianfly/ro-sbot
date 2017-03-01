@@ -29,6 +29,7 @@ public class BattleEvent extends Event<BattleScanner> {
 	private long detectionTime = 0;
 	private long detectionInterval = 2000; // jangan lebih kecil dr 1 dtk untuk menghindari cellChangedData
 	private long attackingTime = 0;
+	private long attackingTimeout = 1000 * 15;
 	private int  numIdleSignal = 0;
 	private int  forceExecute = 0;
 	public boolean isMoving() {
@@ -61,7 +62,7 @@ public class BattleEvent extends Event<BattleScanner> {
     		int  oldMode = charMode;
 	    	int  newMode = executeMode(pixels, now);
 	    	/*
-	    	 * 
+	    	 * Dont modify code below...
 	    	 */
 	    	if (charMode == CHAR_MODE_ATTACKING && newMode == CHAR_MODE_IDLE && now - attackingTime > 1000) {
     			numIdleSignal = 1;
@@ -72,11 +73,16 @@ public class BattleEvent extends Event<BattleScanner> {
 	    	detectionTime = now;
 	    	forceExecute = 0;
 	    	/*
-	    	 * 
+	    	 * Modify code here...
 	    	 */
 	    	P : {
 	    		if (newMode == CHAR_MODE_ATTACKING && numIdleSignal == 0) {
-	    			attackingTime = now;
+	    			if (now - attackingTime > attackingTimeout) {
+	    				numIdleSignal = 1;
+	    			}
+	    			else {
+	    				attackingTime = now;
+	    			}
   					break P;
 	    		}
 	    		if (newMode == CHAR_MODE_ATTACKING && numIdleSignal == 1) {
