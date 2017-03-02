@@ -153,20 +153,20 @@ public class BattleScanner extends Scanner {
     		}
     	}
     	// Cash Shop
-    	for (int x = 5; x < 18; x++) {
-    		for (int y = 118; y < 131; y++) {
+    	for (int x = 0; x < 24; x++) {
+    		for (int y = 112; y < 133; y++) {
     	    	neutralCellMatrix[x][y] = 1;
     		}
     	}
     	// Map
-    	for (int x = 5; x < 33; x++) {
-    		for (int y = 133; y < 157; y++) {
+    	for (int x = 0; x < 33; x++) {
+    		for (int y = 133; y < 160; y++) {
     	    	neutralCellMatrix[x][y] = 1;
     		}
     	}
     	// Buff List
     	for (int x = 33; x < 120; x++) {
-    		for (int y = 150; y < 157; y++) {
+    		for (int y = 150; y < 160; y++) {
     	    	neutralCellMatrix[x][y] = 1;
     		}
     	}
@@ -248,10 +248,10 @@ public class BattleScanner extends Scanner {
 				}
 				boolean dark = isDark(cellMatrix[x][y]);
 				if (dark) {
-					cellMatrix[x][y].createAveragePixels(false, 5);
+					cellMatrix[x][y].createAveragePixels(false, 2);
 				}
 				else {
-					cellMatrix[x][y].createAveragePixels(true,  5);	
+					cellMatrix[x][y].createAveragePixels(true,  2);	
 				}
 			}
 		}
