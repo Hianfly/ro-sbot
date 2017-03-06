@@ -9,7 +9,9 @@ package com.hiandev.rosbot.obsolete;
 //
 //import com.sun.org.apache.xalan.internal.xsltc.compiler.sym;
 //
-//public class ScreenRobot {
+public class ScreenRobot {
+	
+}
 //
 //    public ScreenRobot(int x, int y) throws AWTException {
 //    	this._x = x;

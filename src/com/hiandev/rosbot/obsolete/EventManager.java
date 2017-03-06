@@ -9,7 +9,9 @@ package com.hiandev.rosbot.obsolete;
 //import com.hiandev.rosbot.scanner.Scanner;
 //import com.hiandev.rosbot.scanner.v0.ScannerXz;
 //
-//public class EventManager {
+public class EventManager {
+	
+}
 //	
 //	private final ScannerXz scanner;
 //	public EventManager(ScannerXz scanner) {

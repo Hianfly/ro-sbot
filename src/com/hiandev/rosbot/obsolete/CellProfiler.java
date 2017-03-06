@@ -8,7 +8,9 @@ package com.hiandev.rosbot.obsolete;
 //
 //import com.hiandev.rosbot.scanner.v0.ScannerXz;
 //
-//public class CellProfiler {
+public class CellProfiler {
+	
+}
 //
 //	public static final int PROFILE_OBJECT_ID = 0;
 //	public static final int PROFILE_GROUND = 1;

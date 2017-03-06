@@ -2,15 +2,15 @@ package com.hiandev.rosbot.event;
 
 import java.awt.MouseInfo;
 import java.awt.Point;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.Random;
-import com.hiandev.rosbot.profiler.BattleProfiler;
-import com.hiandev.rosbot.scanner.BattleScanner;
 import com.hiandev.rosbot.scanner.Cell;
+import com.hiandev.rosbot.scanner.ItemScanner;
 
-public class BattleEvent extends Event<BattleScanner> {
+public class ItemEvent extends Event<ItemScanner> {
 	
-	public BattleEvent(BattleScanner scanner) {
+	public ItemEvent(ItemScanner scanner) {
 		super (scanner);
 	}
     
@@ -24,14 +24,18 @@ public class BattleEvent extends Event<BattleScanner> {
 	 * 
 	 * 
 	 */
+	private int  mouseCellX = 5;
+	private int  mouseCellY = 102;
 	private int  charMode = 0;
 	private int  charMove = 0;
 	private long detectionTime = 0;
-	private long detectionInterval = 2000; // jangan lebih kecil dr 1 dtk untuk menghindari cellChangedData
+	private long detectionInterval = 1500; // jangan lebih kecil dr 1 dtk untuk menghindari cellChangedData
 	private long attackingTime = 0;
-	private long attackingTimeout = 1000 * 15;
+	private long attackingTimeout = 1000 * 20;
+	private long attackingStartTime = 0;
 	private int  numIdleSignal = 0;
 	private int  forceExecute = 0;
+	private long idleTime = 0;
 	public boolean isMoving() {
 		return charMove == 1;
 	}
@@ -47,12 +51,12 @@ public class BattleEvent extends Event<BattleScanner> {
 		executeMode();
 	}
 	private void executeMove() {
-//		if (scanner.getCellDiff().size() > (long) (scanner.getCellRows() * scanner.getCellCols() * 0.9)) {
-//			charMove = 1;
-//    	}
-//		else {
-//			charMove = 0;
-//		}
+		if (getScanner().getMotionSize() > getScanner().getCellSize() * 0.7) {
+			charMove = 1;
+    	}
+		else {
+			charMove = 0;
+		}
 	}
 	private void executeMode() {
     	try {
@@ -77,7 +81,7 @@ public class BattleEvent extends Event<BattleScanner> {
 	    	 */
 	    	P : {
 	    		if (newMode == CHAR_MODE_ATTACKING && numIdleSignal == 0) {
-	    			if (now - attackingTime > attackingTimeout) {
+	    			if (now - attackingStartTime > attackingTimeout) {
 	    				numIdleSignal = 1;
 	    			}
 	    			else {
@@ -89,7 +93,8 @@ public class BattleEvent extends Event<BattleScanner> {
 	   	    		numIdleSignal = 0;
 		    		charMode = CHAR_MODE_IDLE;
 		    		if (!isMoving()) {
-		    			forceExecute = onIdle(this);
+	    				idleTime = idleTime == 0  ? now : idleTime;
+		    			forceExecute = onIdle(this, now - idleTime, oldMode);
 		    		}
   					break P;
 	    		}
@@ -100,12 +105,13 @@ public class BattleEvent extends Event<BattleScanner> {
 		    	if (newMode == CHAR_MODE_IDLE) {
 		    		charMode = CHAR_MODE_IDLE;
 		    		if (!isMoving()) {
-		    			forceExecute = onIdle(this);
+	    				idleTime = idleTime == 0  ? now : idleTime;
+		    			forceExecute = onIdle(this, now - idleTime, oldMode);
 		    		}
 		    		break P;
 		    	}
 	    	}
-	    	System.out.println(oldMode + " : " + newMode + " : " + charMode + " >>> " + charMove + " : " + numIdleSignal + " : " + " " + (now - attackingTime) + "ms " + forceExecute);
+	    	System.out.println(oldMode + " : " + newMode + " : " + charMode + "  ---  mv:" + charMove + "  is:" + numIdleSignal + "  fe:" + forceExecute + "  it:" + (idleTime == 0 ? 0 : now - idleTime)  + "ms  at:" + (attackingTime == 0 ? 0 : now - attackingTime) + "ms");
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
@@ -133,84 +139,97 @@ public class BattleEvent extends Event<BattleScanner> {
 		}
 		return newMode;
 	}
-	protected int onIdle(BattleEvent event) {
+	protected int onIdle(ItemEvent event, long duration, int prevMode) {
 		return 0;
 	}
-	protected int onPick(BattleEvent event) {
-		return 0;
-	}
-	
+
 	/*
 	 * 
 	 * 
 	 * 
 	 */
-    public int hover(Cell cell) {
+    public int hoverCell(Cell cell) {
+    	return hoverCell(cell._x, cell._y);
+    }
+    public int hoverCell(int _x, int _y) {
     	int r = -1;
-    	getScanner().mouseGotoCell(cell._x, cell._y);
+    	getScanner().mouseGotoCell(_x, _y);
     	sleep(20);
 	    int[] pixels = captureMousePixels(new int[2], true);
     	if (isMatch(MODE_TARGETING, pixels, 4, 20)) {
     		r = charMode = CHAR_MODE_TARGETING;
-    		getScanner().getBattleProfiler().add(cell, BattleProfiler.PROFILE_TARGETABLE);
     	}
     	else if (isMatch(MODE_PICKING, pixels, 4, 20)) {
     		r = charMode = CHAR_MODE_PICKING;
-    		getScanner().getBattleProfiler().add(cell, BattleProfiler.PROFILE_PICKABLE);
-    	}
-    	else {
-    		long now = System.currentTimeMillis();
-    		if (now - attackingTime > 1500) {
-    			getScanner().getBattleProfiler().add(cell, BattleProfiler.PROFILE_NOT_CLICKABLE);
-    		}
-    		getScanner().mouseIdle();
-        	sleep(20);
     	}
     	return r;
     }
+    public int cancel() {
+    	int r = 0;
+    	getScanner().mouseGotoCell(mouseCellX, mouseCellY);
+    	sleep(20);
+		return r;
+    }
+    
+    /*
+     * 
+     * 
+     * 
+     */
     public int attack() {
     	int r = 0;
-    	attackingTime = System.currentTimeMillis();
+    	attackingTime = attackingStartTime = System.currentTimeMillis();
+    	idleTime = 0;
     	charMode = CHAR_MODE_ATTACKING;
     	getScanner().mouseLeftClick();
     	sleep(20);
-    	getScanner().mouseIdle();
+    	getScanner().mouseGotoCell(mouseCellX, mouseCellY);
     	sleep(20);
     	return r;
     }
     public int pick() {
     	int r = 0;
-    	attackingTime = System.currentTimeMillis();
+    	attackingTime = attackingStartTime = System.currentTimeMillis();
+    	idleTime = 0;
     	charMode = CHAR_MODE_PICKING;
     	getScanner().mouseLeftClick();
     	sleep(20);
-    	getScanner().mouseIdle();
+    	getScanner().mouseGotoCell(mouseCellX, mouseCellY);
     	sleep(20);
     	charMode = CHAR_MODE_IDLE;
     	return r;
     }
+    public int teleport() {
+    	int r = 0;
+    	idleTime = 0;
+		getScanner().keyPush(KeyEvent.VK_Z);
+    	sleep(20);
+		return r;
+    }
     public int move(Cell cell) {
     	int r = 0;
+    	idleTime = 0;
     	getScanner().mouseGotoCell(cell._x, cell._y);
     	sleep(20);
     	getScanner().mouseLeftClick();
     	sleep(20);
-    	getScanner().mouseIdle();
+    	getScanner().mouseGotoCell(mouseCellX, mouseCellY);
     	sleep(20);
     	return r;
     }
-    public int moveRandomly() {
-    	int r = 0;
-    	int x = new Random().nextInt(getScanner()._w);
-    	int y = new Random().nextInt(getScanner()._h);
-    	getScanner().mouseGoto(x + 1, y + 1);
-    	sleep(20);
-    	getScanner().mouseLeftClick();
-    	sleep(20);
-    	getScanner().mouseIdle();
-    	sleep(20);
-    	return r;
-    }
+//    public int moveRandomly() {
+//    	int r = 0;
+//    	idleTime = 0;
+//    	int x = new Random().nextInt(getScanner()._w);
+//    	int y = new Random().nextInt(getScanner()._h);
+//    	getScanner().mouseGoto(x + 1, y + 1);
+//    	sleep(20);
+//    	getScanner().mouseLeftClick();
+//    	sleep(20);
+//    	getScanner().mouseGotoCell(mouseCellX, mouseCellY);
+//    	sleep(20);
+//    	return r;
+//    }
     
     /*
      * 

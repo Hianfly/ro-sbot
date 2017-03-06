@@ -11,7 +11,9 @@ package com.hiandev.rosbot.obsolete;
 //import org.opencv.core.Core;
 //import com.hiandev.rosbot.scanner.Scanner;
 //
-//public class ScannerXz extends Scanner {
+public class ScannerXz {
+	
+}
 //
 //	static{ System.loadLibrary(Core.NATIVE_LIBRARY_NAME); }
 //	

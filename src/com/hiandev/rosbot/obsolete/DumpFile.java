@@ -25,7 +25,9 @@ package com.hiandev.rosbot.obsolete;
 //
 //import com.hiandev.rosbot.scanner.v0.ScannerXz;
 //
-//public class DumpFile{
+public class DumpFile {
+	
+}
 //
 //	static{ System.loadLibrary(Core.NATIVE_LIBRARY_NAME); }
 //	

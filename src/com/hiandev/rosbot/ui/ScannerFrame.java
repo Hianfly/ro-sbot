@@ -12,13 +12,13 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import com.hiandev.rosbot.scanner.BattleScanner;
+import com.hiandev.rosbot.scanner.ItemScanner;
 import com.hiandev.rosbot.scanner.Scanner;
 
 public class ScannerFrame {
 	
-	private final BattleScanner scanner;
-    public ScannerFrame(BattleScanner scanner) {
+	private final ItemScanner scanner;
+    public ScannerFrame(ItemScanner scanner) {
     	this.scanner = scanner;
     }
     

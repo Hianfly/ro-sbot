@@ -5,7 +5,9 @@ package com.hiandev.rosbot.obsolete;
 //
 //import com.hiandev.rosbot.scanner.v0.ScannerXz;
 //
-//public class HpSpWatcher{
+public class HpSpWatcher {
+	
+}
 //	
 //	private ScannerXz scanner;
 //	public HpSpWatcher(ScannerXz scanner) {
