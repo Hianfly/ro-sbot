@@ -42,7 +42,7 @@ public class Main {
 			itemEvent      = new MainItemEvent(itemScanner);
 			hpspScanner    = new MainHpSpScanner(5, 30);
 			hpspEvent      = new MainHpSpEvent(hpspScanner);
-			hpspocrScanner = new MainHpSpOcrScanner(5, 80);
+			hpspocrScanner = new MainHpSpOcrScanner(22, 81);
 
 			scannerFrame   = new ScannerFrame(hpspocrScanner);
 //			hpspScanner.start();
@@ -104,8 +104,8 @@ public class Main {
 		  		int _y = event.getScanner().getMiddleCellY();
 		  		int _f = 1;
 		  		while (_f == 1) {
-			  		L : for (int x = _x - 5; x <= _x + 5; x += 5) {
-				  		for (int y = _y + 10; y >= _y - 10; y -= 5) { 
+			  		L : for (int x = _x - 10; x <= _x + 10; x += 10) {
+				  		for (int y = _y + 20; y >= _y - 10; y -= 10) { 
 					  		switch (event.hoverCell(x, y)) {
 					  		case ItemEvent.CHAR_MODE_TARGETING: _f = 2; event.attack(); break L;
 							case ItemEvent.CHAR_MODE_PICKING  : _f = 1; event.pick()  ; break L;
@@ -181,7 +181,7 @@ public class Main {
 		@Override
 		public void onHpChanged(int percentage) {
 			super.onHpChanged(percentage);
-			if (percentage < 45) {
+			if (percentage < 25) {
 				System.out.println("HP CHANGED >>> " + percentage);
 				long now = System.currentTimeMillis();
 				if (now - lastFlyWingTime > 3000) {
@@ -189,7 +189,7 @@ public class Main {
 					getScanner().keyPush(KeyEvent.VK_Z);
 				}
 			}
-			if (percentage < 80) {
+			if (percentage < 50) {
 				System.out.println("HP CHANGED >>> " + percentage);
 				getScanner().keyPush(KeyEvent.VK_X);
 			}
