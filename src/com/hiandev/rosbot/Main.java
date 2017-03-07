@@ -74,7 +74,7 @@ public class Main {
 		  		int _f = 1;
 		  		while (_f == 1) {
 			  		L : for (int x = _x - 5; x <= _x + 5; x += 5) {
-				  		for (int y = _y + 5; y >= _y - 10; y -= 5) { 
+				  		for (int y = _y + 10; y >= _y - 10; y -= 5) { 
 					  		switch (event.hoverCell(x, y)) {
 					  		case ItemEvent.CHAR_MODE_TARGETING: _f = 2; event.attack(); break L;
 							case ItemEvent.CHAR_MODE_PICKING  : _f = 1; event.pick()  ; break L;
