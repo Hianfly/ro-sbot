@@ -17,8 +17,8 @@ import com.hiandev.rosbot.scanner.Scanner;
 
 public class ScannerFrame {
 	
-	private final ItemScanner scanner;
-    public ScannerFrame(ItemScanner scanner) {
+	private final Scanner scanner;
+    public ScannerFrame(Scanner scanner) {
     	this.scanner = scanner;
     }
     

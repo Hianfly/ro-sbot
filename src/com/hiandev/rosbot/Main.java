@@ -12,6 +12,7 @@ import com.hiandev.rosbot.event.HpSpEvent;
 import com.hiandev.rosbot.event.ItemEvent;
 import com.hiandev.rosbot.profiler.ProfilerDumper;
 import com.hiandev.rosbot.scanner.Cell;
+import com.hiandev.rosbot.scanner.HpSpOcrScanner;
 import com.hiandev.rosbot.scanner.Pixel;
 import com.hiandev.rosbot.scanner.HpSpScanner;
 import com.hiandev.rosbot.scanner.ItemScanner;
@@ -33,19 +34,49 @@ public class Main {
 	ProfilerDumper    profilerDumper = null;
 	MainItemScanner   itemScanner = null;
 	MainItemEvent     itemEvent = null;
+	MainHpSpOcrScanner    hpspocrScanner = null;
 	
 	public Main() {
 		try {
 			itemScanner    = new MainItemScanner(5, 30);
 			itemEvent      = new MainItemEvent(itemScanner);
-			scannerFrame   = new ScannerFrame(itemScanner);
 			hpspScanner    = new MainHpSpScanner(5, 30);
 			hpspEvent      = new MainHpSpEvent(hpspScanner);
-			hpspScanner.start();
-			itemScanner.start();
+			hpspocrScanner = new MainHpSpOcrScanner(5, 80);
+
+			scannerFrame   = new ScannerFrame(hpspocrScanner);
+//			hpspScanner.start();
+//			itemScanner.start();
+			hpspocrScanner.start();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public class MainHpSpOcrScanner extends HpSpOcrScanner {
+		
+		public MainHpSpOcrScanner(int _x, int _y) throws AWTException {
+			super (_x, _y);
+		}
+
+		@Override
+		public boolean onStart() {
+			boolean start = super.onStart();
+			scannerFrame.show();
+			sleep(1000);
+			return start;
+		}
+		@Override
+		public void onPreExecute() {
+			super.onPreExecute();
+			scannerFrame.clearCells(5);
+		}
+		@Override
+		public void onPostExecute() {
+			super.onPostExecute();
+			scannerFrame.updatePreview(hpspocrScanner.createImage());
+		}
+		
 	}
 	
 	public class MainItemEvent extends ItemEvent {

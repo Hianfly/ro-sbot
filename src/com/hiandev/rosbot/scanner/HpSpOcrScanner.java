@@ -1,12 +1,17 @@
 package com.hiandev.rosbot.scanner;
 
 import java.awt.AWTException;
+import java.awt.Point;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 
 public class HpSpOcrScanner extends Scanner {
 
     public HpSpOcrScanner(int _x, int _y) throws AWTException {
-    	super (_x + ((800 / 2) - 80), _y + ((600 / 2) - 30), 160, 80);
-    	setInterval(50);
+    	super (_x, _y, 200, 35);
+    	setInterval(1000);
     }
     
     /*
@@ -15,30 +20,48 @@ public class HpSpOcrScanner extends Scanner {
      * 
      */
 
+    public int[][] charMatrix = null;
+    private int[][] pixels = null;
+    
+    
     @Override
 	protected void onExecute() {
 		super.onExecute();
 		try {
-			int[][] pixels = new int[_h][_w * 3];
-			for (int r = 0; r < _h; r++) {
-				pixels[r] = floorPixels(getScreenImage().getRaster().getPixels(0, r, _w, 1, (int[]) null), 10);
+			/*
+			 * 
+			 * 
+			 */
+			pixels = new int[_h][_w * 3];
+			for (int y = 0; y < _h; y++) {
+				pixels[y] = floorPixels(getScreenImage().getRaster().getPixels(0, y, _w, 1, (int[]) null), 10);
 			}
-			int first  = -1;
-			int last   = -1;
-			for (int c = 0; c < _w * 3; c += 3) {
-				for (int r = 0; r < _h; r += 1) {
-					if (Math.abs(pixels[r][c + 0] -  10) <= 20 &&
-						Math.abs(pixels[r][c + 1] - 230) <= 20 &&
-						Math.abs(pixels[r][c + 2] -  30) <= 20) {
-						last  = c;
-						first = first == -1 ? c : first;
-						break;
+			/*
+			 * 
+			 * 
+			 */
+			int[] color = new int[] { 0, 0, 0 };
+			for (int y = 0; y < pixels.length; y++) {
+				boolean line = true;
+				L : for (int x = 0; x < pixels[y].length; x += 3) {
+					if (Math.abs(pixels[y][x + 0] - color[0]) <= 10 && 
+						Math.abs(pixels[y][x + 1] - color[1]) <= 10 && 
+						Math.abs(pixels[y][x + 2] - color[2]) <= 10) {
+						line = false;
+						break L;
+					}
+				}
+				if (line) {
+					for (int x = 0; x < pixels[y].length; x += 3) {
+						pixels[y][x + 0] = 255;
+						pixels[y][x + 1] =   0;
+						pixels[y][x + 2] =   0;
 					}
 				}
 			}
-			if (last != -1) {
-				mHpPercentage = (int) (((float) (last - first) / 174) * 100);
-			}
+			
+			
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -47,6 +70,12 @@ public class HpSpOcrScanner extends Scanner {
     private int mHpPercentage = 100;
     public final int getHpPercentage() {
     	return mHpPercentage;
+    }
+    
+    
+    
+    public BufferedImage createImage() {
+    	return toBufferedImage(pixels);
     }
     
 }

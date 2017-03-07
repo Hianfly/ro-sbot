@@ -61,7 +61,7 @@ public class ItemEvent extends Event<ItemScanner> {
 	private void executeMode() {
     	try {
 	    	long     now = System.currentTimeMillis();
-	    	int[] pixels = captureMousePixels(false);
+	    	int[] pixels = captureMousePixels(false, 10);
     		int  oldMode = charMode;
 	    	int  newMode = executeMode(pixels, now);
 	    	/*
@@ -154,7 +154,7 @@ public class ItemEvent extends Event<ItemScanner> {
     	int r = -1;
     	getScanner().mouseGotoCell(_cx, _cy);
     	sleep(20);
-	    int[] pixels = captureMousePixels(true);
+	    int[] pixels = captureMousePixels(true, 10);
     	if (isMatch(MODE_TARGETING, pixels, 4, 20)) {
     		r = charMode = CHAR_MODE_TARGETING;
     	}
@@ -265,31 +265,29 @@ public class ItemEvent extends Event<ItemScanner> {
 		{  -1, -1, -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1 },
 		{  -1, -1, -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1 },
 	};
-	public int[] captureMousePixels(boolean newRaster) {
+	public int[] captureMousePixels(boolean newRaster, int floorThreshold) {
 	  	Point point = MouseInfo.getPointerInfo().getLocation();
 	  	int x = (int) point.getX() - getScanner()._x;
 	  	int y = (int) point.getY() - getScanner()._y;
 	  	int w = 4;
 	  	int h = 8;
+	  	int f = 1;
+	  	int t = 10;
 	  	if (x < 0 || y < 0 || x >= getScanner()._w || y >= getScanner()._w) {
 	  		return null;
 	  	}
 	  	int[] r = new int[0];
-	  	if (newRaster) {
-		  	BufferedImage bi = getScanner().captureScreenImage(x, y, w + 1, h + 1);
-		  	try {
-		  		r = getScanner().floorPixels(bi.getRaster().getPixels(1, 1, w, h, new int[w * h * 3]), 10);
-		  	} catch (Exception e) {
-		  		e.printStackTrace();
-		  	}
-	  	}
-	  	else {
-		  	BufferedImage bi = newRaster ? getScanner().captureScreenImage() : getScanner().captureScreenImage();
-		  	try {
-		  		r = getScanner().floorPixels(bi.getRaster().getPixels(x + 1, y + 1, w, h, new int[w * h * 3]), 10);
-		  	} catch (Exception e) {
-		  		e.printStackTrace();
-		  	}
+	  	try {
+		  	if (newRaster) {
+			  	BufferedImage bi = getScanner().captureScreenImage((int) point.getX(), (int) point.getY(), w + f, h + f);
+				r = getScanner().floorPixels(bi.getRaster().getPixels(0 + f, 0 + f, w, h, new int[w * h * 3]), floorThreshold);
+			}
+		  	else {
+			  	BufferedImage bi = getScanner().getScreenImage();
+				r = getScanner().floorPixels(bi.getRaster().getPixels(x + f, y + f, w, h, new int[w * h * 3]), floorThreshold);
+			}
+	  	} catch (Exception e) {
+	  		e.printStackTrace();
 	  	}
 	  	return r;
 	}

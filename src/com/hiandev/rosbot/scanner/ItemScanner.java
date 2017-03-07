@@ -221,6 +221,24 @@ public class ItemScanner extends Scanner {
 			}
     	}
     }
+	private int[] toPixels(Cell[][] cellMatrix) {
+		int[] pixels = new int[_w * _h * 3];
+		int   index  = 0;
+		for (int y = 0; y < cellMatrix.length; y++) {
+			for (int z = 0; z < Cell.SIZE; z++) {
+				for (int x = 0; x < cellMatrix[y].length; x++) {
+					if (cellMatrix[y][x] == null) {
+						continue;
+					}
+					int[] int1d = cellMatrix[y][x].toInt1D(z);
+					for (int i : int1d) {
+						pixels[index++] = i;
+					}
+				}
+			}
+		}
+		return pixels;
+	}
 	
 	/*
 	 * 
@@ -426,26 +444,27 @@ public class ItemScanner extends Scanner {
      * 
      */
     public BufferedImage createCellMatrixImage() {
-		int[] pixels = new int[_w * _h * 3];
-		int   index  = 0;
-		for (int x = 0; x < cellMatrix.length; x++) {
-			for (int z = 0; z < Cell.SIZE; z++) {
-				for (int y = 0; y < cellMatrix[x].length; y++) {
-					if (cellMatrix[x][y] == null) {
-						continue;
-					}
-					int[] int1d = cellMatrix[x][y].toInt1D(z);
-					for (int i : int1d) {
-						pixels[index++] = i;
-					}
-				}
-			}
-		}
-		BufferedImage bi = getScreenImage();
-		ColorModel cm = bi.getColorModel();
-		WritableRaster raster = Raster.createWritableRaster(bi.getRaster().getSampleModel(), new Point(0, 0));
-		raster.setPixels(0, 0, bi.getWidth(), bi.getHeight(), pixels);
-		return new BufferedImage(cm, raster, cm.isAlphaPremultiplied(), null);
+		return toBufferedImage(toPixels(cellMatrix));
+//		int[] pixels = new int[_w * _h * 3];
+//		int   index  = 0;
+//		for (int y = 0; y < cellMatrix.length; y++) {
+//			for (int z = 0; z < Cell.SIZE; z++) {
+//				for (int x = 0; x < cellMatrix[y].length; x++) {
+//					if (cellMatrix[y][x] == null) {
+//						continue;
+//					}
+//					int[] int1d = cellMatrix[y][x].toInt1D(z);
+//					for (int i : int1d) {
+//						pixels[index++] = i;
+//					}
+//				}
+//			}
+//		}
+//		BufferedImage bi = getScreenImage();
+//		ColorModel cm = bi.getColorModel();
+//		WritableRaster raster = Raster.createWritableRaster(bi.getRaster().getSampleModel(), new Point(0, 0));
+//		raster.setPixels(0, 0, bi.getWidth(), bi.getHeight(), pixels);
+//		return new BufferedImage(cm, raster, cm.isAlphaPremultiplied(), null);
     }
     public static class CellDistanceComparator implements Comparator<Cell> {
     	@Override

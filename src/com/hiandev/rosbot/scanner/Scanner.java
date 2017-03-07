@@ -1,10 +1,15 @@
 package com.hiandev.rosbot.scanner;
 
 import java.awt.AWTException;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
+
 import com.hiandev.rosbot.Service;
 
 public abstract class Scanner extends Service {
@@ -88,6 +93,26 @@ public abstract class Scanner extends Service {
 			samples[x] = (samples[x] / threshold) * threshold;
 		}
 		return samples;
+	}
+	public int[] toPixels(int[][] pixels2D) {
+		int[] pixels = new int[pixels2D.length * pixels2D[0].length];
+		int   index = 0;
+		for (int y = 0; y < pixels2D.length; y++) {
+			for (int x = 0; x < pixels2D[y].length; x++) {
+				pixels[index++] = pixels2D[y][x];
+			}
+		}
+		return pixels;
+	}
+	public BufferedImage toBufferedImage(int[][] pixels) {
+		return toBufferedImage(toPixels(pixels));
+	}
+	public BufferedImage toBufferedImage(int[] pixels) {
+		BufferedImage  bi = getScreenImage();
+		ColorModel     cm = bi.getColorModel();
+		WritableRaster rs = Raster.createWritableRaster(bi.getRaster().getSampleModel(), new Point(0, 0));
+		rs.setPixels(0, 0, bi.getWidth(), bi.getHeight(), pixels);
+		return new BufferedImage(cm, rs, cm.isAlphaPremultiplied(), null);
 	}
     
 }
