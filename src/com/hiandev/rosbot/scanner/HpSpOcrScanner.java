@@ -60,7 +60,34 @@ public class HpSpOcrScanner extends Scanner {
 				}
 			}
 			
-			
+			for (int z = 0; z < pixels.length; z++) {
+				if (Pixel.isMatch(pixels[z], 0, 255, 0, 0)) {
+					continue;
+				}
+				for (int x = 0; x < pixels[z].length; x += 3) {
+					boolean line = true;
+					int     rows = 0;
+					for (int y = z; y < pixels.length; y += 1) {
+						if (Pixel.isMatch(pixels[y], x, 255, 0, 0)) {
+							break;
+						}
+						rows++;
+						if (Math.abs(pixels[y][x + 0] - color[0]) <= 10 && 
+							Math.abs(pixels[y][x + 1] - color[1]) <= 10 && 
+							Math.abs(pixels[y][x + 2] - color[2]) <= 10) {
+							line = false;
+							break ;
+						}
+					}
+					if (line) {
+						for (int y = z; y < x + rows; y += 1) {
+							pixels[y][x + 0] = 255;
+							pixels[y][x + 1] =   0;
+							pixels[y][x + 2] =   0;
+						}
+					}	
+				}
+			}
 			
 		} catch (Exception e) {
 			e.printStackTrace();
