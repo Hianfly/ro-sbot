@@ -42,7 +42,7 @@ public class Main {
 			itemEvent      = new MainItemEvent(itemScanner);
 			hpspScanner    = new MainHpSpScanner(5, 30);
 			hpspEvent      = new MainHpSpEvent(hpspScanner);
-			hpspocrScanner = new MainHpSpOcrScanner(22, 81);
+			hpspocrScanner = new MainHpSpOcrScanner(8, 100);
 
 			scannerFrame   = new ScannerFrame(hpspocrScanner);
 //			hpspScanner.start();
