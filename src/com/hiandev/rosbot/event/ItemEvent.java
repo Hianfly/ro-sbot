@@ -276,9 +276,9 @@ public class ItemEvent extends Event<ItemScanner> {
 	  	}
 	  	int[] r = new int[0];
 	  	if (newRaster) {
-		  	BufferedImage bi = newRaster ? getScanner().captureScreenImage() : getScanner().captureScreenImage();
+		  	BufferedImage bi = getScanner().captureScreenImage(x, y, w + 1, h + 1);
 		  	try {
-		  		r = getScanner().floorPixels(bi.getRaster().getPixels(x + 1, x + 1, w, h, new int[w * h * 3]), 10);
+		  		r = getScanner().floorPixels(bi.getRaster().getPixels(1, 1, w, h, new int[w * h * 3]), 10);
 		  	} catch (Exception e) {
 		  		e.printStackTrace();
 		  	}
@@ -286,7 +286,7 @@ public class ItemEvent extends Event<ItemScanner> {
 	  	else {
 		  	BufferedImage bi = newRaster ? getScanner().captureScreenImage() : getScanner().captureScreenImage();
 		  	try {
-		  		r = getScanner().floorPixels(bi.getRaster().getPixels(x + 1, x + 1, w, h, new int[w * h * 3]), 10);
+		  		r = getScanner().floorPixels(bi.getRaster().getPixels(x + 1, y + 1, w, h, new int[w * h * 3]), 10);
 		  	} catch (Exception e) {
 		  		e.printStackTrace();
 		  	}
