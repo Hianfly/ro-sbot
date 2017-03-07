@@ -52,6 +52,9 @@ public abstract class Scanner extends Service {
     public BufferedImage captureScreenImage() {
 	    return robot.createScreenCapture(new Rectangle(_x, _y, _w, _h));
     }
+    public BufferedImage captureScreenImage(int _x, int _y, int _w, int _h) {
+	    return robot.createScreenCapture(new Rectangle(_x, _y, _w, _h));
+    }
 
 	/*
 	 * 

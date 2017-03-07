@@ -61,8 +61,7 @@ public class ItemEvent extends Event<ItemScanner> {
 	private void executeMode() {
     	try {
 	    	long     now = System.currentTimeMillis();
-	    	int[] cellXY = new int[2];
-	    	int[] pixels = captureMousePixels(cellXY, false);
+	    	int[] pixels = captureMousePixels(false);
     		int  oldMode = charMode;
 	    	int  newMode = executeMode(pixels, now);
 	    	/*
@@ -149,13 +148,13 @@ public class ItemEvent extends Event<ItemScanner> {
 	 * 
 	 */
     public int hoverCell(Cell cell) {
-    	return hoverCell(cell._x, cell._y);
+    	return hoverCell(cell._cx, cell._cy);
     }
-    public int hoverCell(int _x, int _y) {
+    public int hoverCell(int _cx, int _cy) {
     	int r = -1;
-    	getScanner().mouseGotoCell(_x, _y);
+    	getScanner().mouseGotoCell(_cx, _cy);
     	sleep(20);
-	    int[] pixels = captureMousePixels(new int[2], true);
+	    int[] pixels = captureMousePixels(true);
     	if (isMatch(MODE_TARGETING, pixels, 4, 20)) {
     		r = charMode = CHAR_MODE_TARGETING;
     	}
@@ -209,7 +208,7 @@ public class ItemEvent extends Event<ItemScanner> {
     public int move(Cell cell) {
     	int r = 0;
     	idleTime = 0;
-    	getScanner().mouseGotoCell(cell._x, cell._y);
+    	getScanner().mouseGotoCell(cell._cx, cell._cy);
     	sleep(20);
     	getScanner().mouseLeftClick();
     	sleep(20);
@@ -266,19 +265,31 @@ public class ItemEvent extends Event<ItemScanner> {
 		{  -1, -1, -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1 },
 		{  -1, -1, -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1 },
 	};
-	public int[] captureMousePixels(int[] cellXY, boolean newRaster) {
+	public int[] captureMousePixels(boolean newRaster) {
 	  	Point point = MouseInfo.getPointerInfo().getLocation();
-	  	cellXY[0] = (int) point.getX() - getScanner()._x;
-	  	cellXY[1] = (int) point.getY() - getScanner()._y;
-	  	if (cellXY[0] >= getScanner()._w || cellXY[1] >= getScanner()._w) {
+	  	int x = (int) point.getX() - getScanner()._x;
+	  	int y = (int) point.getY() - getScanner()._y;
+	  	int w = 4;
+	  	int h = 8;
+	  	if (x < 0 || y < 0 || x >= getScanner()._w || y >= getScanner()._w) {
 	  		return null;
 	  	}
-	  	BufferedImage bi = newRaster ? getScanner().captureScreenImage() : getScanner().captureScreenImage();
 	  	int[] r = new int[0];
-	  	try {
-	  		r = getScanner().floorPixels(bi.getRaster().getPixels(cellXY[0] + 1, cellXY[1] + 1, 4, 8, new int[4 * 8 * 3]), 10);
-	  	} catch (Exception e) {
-	  		System.out.println(e.getMessage());
+	  	if (newRaster) {
+		  	BufferedImage bi = newRaster ? getScanner().captureScreenImage() : getScanner().captureScreenImage();
+		  	try {
+		  		r = getScanner().floorPixels(bi.getRaster().getPixels(x + 1, x + 1, w, h, new int[w * h * 3]), 10);
+		  	} catch (Exception e) {
+		  		e.printStackTrace();
+		  	}
+	  	}
+	  	else {
+		  	BufferedImage bi = newRaster ? getScanner().captureScreenImage() : getScanner().captureScreenImage();
+		  	try {
+		  		r = getScanner().floorPixels(bi.getRaster().getPixels(x + 1, x + 1, w, h, new int[w * h * 3]), 10);
+		  	} catch (Exception e) {
+		  		e.printStackTrace();
+		  	}
 	  	}
 	  	return r;
 	}
