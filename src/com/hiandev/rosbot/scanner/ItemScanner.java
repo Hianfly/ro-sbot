@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.hiandev.rosbot.event.ItemEvent;
+
 public class ItemScanner extends Scanner {
 
     public ItemScanner(int _x, int _y) throws AWTException {
@@ -47,6 +49,13 @@ public class ItemScanner extends Scanner {
 			e.printStackTrace();
 		}
 	}
+    @Override
+    protected void onPostExecute() {
+    	super.onPostExecute();
+    	if (itemEvent != null) {
+    		itemEvent.execute();
+    	}
+    }
     
     /*
      * 
@@ -438,33 +447,27 @@ public class ItemScanner extends Scanner {
 	  	return itemList;
 	}
     
+	/*
+	 * 
+	 * 
+	 * 
+	 */
+	private ItemEvent itemEvent = null;
+	public void setItemEvent(ItemEvent itemEvent) {
+		this.itemEvent = itemEvent;
+	}
+	public ItemEvent getItemEvent() {
+		return itemEvent;
+	}
+	
     /*
      *
      * 
      * 
      */
-    public BufferedImage createCellMatrixImage() {
+	@Override
+    public BufferedImage toBufferedImage() {
 		return toBufferedImage(toPixels(cellMatrix));
-//		int[] pixels = new int[_w * _h * 3];
-//		int   index  = 0;
-//		for (int y = 0; y < cellMatrix.length; y++) {
-//			for (int z = 0; z < Cell.SIZE; z++) {
-//				for (int x = 0; x < cellMatrix[y].length; x++) {
-//					if (cellMatrix[y][x] == null) {
-//						continue;
-//					}
-//					int[] int1d = cellMatrix[y][x].toInt1D(z);
-//					for (int i : int1d) {
-//						pixels[index++] = i;
-//					}
-//				}
-//			}
-//		}
-//		BufferedImage bi = getScreenImage();
-//		ColorModel cm = bi.getColorModel();
-//		WritableRaster raster = Raster.createWritableRaster(bi.getRaster().getSampleModel(), new Point(0, 0));
-//		raster.setPixels(0, 0, bi.getWidth(), bi.getHeight(), pixels);
-//		return new BufferedImage(cm, raster, cm.isAlphaPremultiplied(), null);
     }
     public static class CellDistanceComparator implements Comparator<Cell> {
     	@Override

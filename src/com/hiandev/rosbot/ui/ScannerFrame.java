@@ -17,8 +17,12 @@ import com.hiandev.rosbot.scanner.Scanner;
 
 public class ScannerFrame {
 	
-	private final Scanner scanner;
-    public ScannerFrame(Scanner scanner) {
+    public ScannerFrame() {
+    	
+    }
+
+	private Scanner scanner;
+    public void setScanner(Scanner scanner) {
     	this.scanner = scanner;
     }
     

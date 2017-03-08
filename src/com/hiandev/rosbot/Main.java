@@ -7,14 +7,9 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
-
-import com.hiandev.rosbot.event.HpSpEvent;
 import com.hiandev.rosbot.event.ItemEvent;
-import com.hiandev.rosbot.profiler.ProfilerDumper;
 import com.hiandev.rosbot.scanner.Cell;
-import com.hiandev.rosbot.scanner.HpSpOcrScanner;
-import com.hiandev.rosbot.scanner.Pixel;
-import com.hiandev.rosbot.scanner.HpSpScanner;
+import com.hiandev.rosbot.scanner.InfoScanner;
 import com.hiandev.rosbot.scanner.ItemScanner;
 import com.hiandev.rosbot.ui.ScannerFrame;
 
@@ -27,54 +22,46 @@ public class Main {
 	public static void main(String[] args) {
 		new Main();
 	}
-	
-	ScannerFrame      scannerFrame = null;
-	MainHpSpScanner   hpspScanner = null;
-	MainHpSpEvent     hpspEvent = null;
-	ProfilerDumper    profilerDumper = null;
-	MainItemScanner   itemScanner = null;
-	MainItemEvent     itemEvent = null;
-	MainHpSpOcrScanner    hpspocrScanner = null;
+
+	ItemScanner     itemScanner = null;
+	MainInfoScanner infoScanner = null;
 	
 	public Main() {
 		try {
-			itemScanner    = new MainItemScanner(5, 30);
-			itemEvent      = new MainItemEvent(itemScanner);
-			hpspScanner    = new MainHpSpScanner(5, 30);
-			hpspEvent      = new MainHpSpEvent(hpspScanner);
-			hpspocrScanner = new MainHpSpOcrScanner(8, 100);
+			itemScanner = new ItemScanner(5, 30);
+			itemScanner.setScannerFrame(new ScannerFrame());
+			itemScanner.setItemEvent( new MainItemEvent(itemScanner));
 
-			scannerFrame   = new ScannerFrame(itemScanner);
-			hpspScanner.start();
-			itemScanner.start();
-//			hpspocrScanner.start();
+			infoScanner = new MainInfoScanner(5, 30);
+			infoScanner.setScannerFrame(new ScannerFrame());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		itemScanner.start();
+		infoScanner.start();
 	}
 	
-	public class MainHpSpOcrScanner extends HpSpOcrScanner {
-		
-		public MainHpSpOcrScanner(int _x, int _y) throws AWTException {
+	public class MainInfoScanner extends InfoScanner {
+
+		public MainInfoScanner(int _x, int _y) throws AWTException {
 			super (_x, _y);
 		}
-
+		
 		@Override
-		public boolean onStart() {
-			boolean start = super.onStart();
-			scannerFrame.show();
-			sleep(1000);
-			return start;
+		protected void onHpChanged(int oldHp, int newHp, int oldHpMax, int newHpMax) {
+			super.onHpChanged(oldHp, newHp, oldHpMax, newHpMax);
+			int percentage = (newHp * 100) / newHpMax;
+			if (percentage < 50) {
+				keyPush(KeyEvent.VK_X);
+			}
+			if (percentage < 25) {
+				keyPush(KeyEvent.VK_Z);
+			}
 		}
+		
 		@Override
-		public void onPreExecute() {
-			super.onPreExecute();
-			scannerFrame.clearCells(5);
-		}
-		@Override
-		public void onPostExecute() {
-			super.onPostExecute();
-			scannerFrame.updatePreview(hpspocrScanner.createImage());
+		protected void onSpChanged(int oldSp, int newSp, int oldSpMax, int newSpMax) {
+			super.onSpChanged(oldSp, newSp, oldSpMax, newSpMax);
 		}
 		
 	}
@@ -156,68 +143,6 @@ public class Main {
 			return forceRetry;
 		}
 		
-	}
-	
-	
-	public class MainHpSpScanner extends HpSpScanner {
-		
-		public MainHpSpScanner(int _x, int _y) throws AWTException {
-			super (_x, _y);
-		}
-		
-		@Override
-		public void onPostExecute() {
-			super.onPostExecute();
-			hpspEvent.execute();
-		}
-		
-	}
-	
-	public class MainHpSpEvent extends HpSpEvent {
-		public MainHpSpEvent(HpSpScanner scanner) {
-			super (scanner);
-		}
-		private long lastFlyWingTime = 0;
-		@Override
-		public void onHpChanged(int percentage) {
-			super.onHpChanged(percentage);
-			if (percentage < 25) {
-				System.out.println("HP CHANGED >>> " + percentage);
-				long now = System.currentTimeMillis();
-				if (now - lastFlyWingTime > 3000) {
-					lastFlyWingTime = now;
-					getScanner().keyPush(KeyEvent.VK_Z);
-				}
-			}
-			if (percentage < 50) {
-				System.out.println("HP CHANGED >>> " + percentage);
-				getScanner().keyPush(KeyEvent.VK_X);
-			}
-		}
-	}
-	
-	public class MainItemScanner extends ItemScanner {
-		public MainItemScanner(int _x, int _y) throws AWTException {
-			super (_x, _y);
-		}
-		@Override
-		public boolean onStart() {
-			boolean start = super.onStart();
-//			scannerFrame.show();
-//			sleep(1000);
-			return start;
-		}
-		@Override
-		public void onPreExecute() {
-			super.onPreExecute();
-//			scannerFrame.clearCells(5);
-		}
-		@Override
-		public void onPostExecute() {
-			super.onPostExecute();
-			itemEvent.execute();
-//			scannerFrame.updatePreview(itemScanner.createCellMatrixImage());
-		}
 	}
 	
 }

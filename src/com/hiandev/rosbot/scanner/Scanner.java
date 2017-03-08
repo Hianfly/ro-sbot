@@ -11,6 +11,8 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 
 import com.hiandev.rosbot.Service;
+import com.hiandev.rosbot.event.Event;
+import com.hiandev.rosbot.ui.ScannerFrame;
 
 public abstract class Scanner extends Service {
 	
@@ -20,6 +22,32 @@ public abstract class Scanner extends Service {
     	this._w = _w;
     	this._h = _h;
     	this.robot = new Robot();
+    }
+    
+    @Override
+    protected boolean onStart() {
+    	boolean start = super.onStart();
+		if (frame != null) {
+	    	frame.show();
+			sleep(1000);
+		}
+    	return start;
+    }
+    
+    @Override
+    protected void onPreExecute() {
+    	super.onPreExecute();
+    	if (frame != null) {
+    		frame.clearCells(0);
+    	}
+    }
+    
+    @Override
+    protected void onPostExecute() {
+    	super.onPostExecute();
+    	if (frame != null) {
+    	    frame.updatePreview(toBufferedImage());
+    	}
     }
     
     @Override
@@ -114,5 +142,22 @@ public abstract class Scanner extends Service {
 		rs.setPixels(0, 0, bi.getWidth(), bi.getHeight(), pixels);
 		return new BufferedImage(cm, rs, cm.isAlphaPremultiplied(), null);
 	}
+	public BufferedImage toBufferedImage() {
+		return null;
+	}
     
+	/*
+	 * 
+	 * 
+	 * 
+	 */
+	private ScannerFrame frame;
+	public void setScannerFrame(ScannerFrame frame) {
+		this.frame = frame;
+		this.frame.setScanner(this);
+	}
+	public ScannerFrame getScannerFrame() {
+		return frame;
+	}
+	
 }

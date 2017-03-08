@@ -16,6 +16,21 @@ public class Pixel {
 			   (g == -1 || pixels[offset + 1] == g) && 
 			   (b == -1 || pixels[offset + 2] == b);
 	}
+	public static final boolean isMatch(int[] pixels, int offset, int[] pixel) {
+		return (pixel[0] == -1 || pixels[offset + 0] == pixel[0]) && 
+			   (pixel[1] == -1 || pixels[offset + 1] == pixel[1]) && 
+			   (pixel[2] == -1 || pixels[offset + 2] == pixel[2]);
+	}
+	public static final int findIndex(int[] pixels, int offset, int[][] pixelPool) {
+		int index = -1;
+		for (int x = 0; x < pixelPool.length; x++) {
+			if (isMatch(pixels, offset, pixelPool[x])) {
+				index = x;
+				break;
+			}
+		}
+		return index;
+	}
 	public static final boolean isBelow(int[] pixels, int offset, int threshold) {
 		return (pixels[offset + 0] < threshold) && 
 			   (pixels[offset + 1] < threshold) && 
@@ -33,6 +48,11 @@ public class Pixel {
 		pixels[offset + 0] = r;
 		pixels[offset + 1] = g;
 		pixels[offset + 2] = b;
+	}
+	public static final void setPixel(int[] pixels, int offset, int[] pixel) {
+		pixels[offset + 0] = pixel[0];
+		pixels[offset + 1] = pixel[1];
+		pixels[offset + 2] = pixel[2];
 	}
 	public static final int[] floorBlueOnePixels(int[] pixels) {
 		for (int i = 0; i < pixels.length; i += 3) {
