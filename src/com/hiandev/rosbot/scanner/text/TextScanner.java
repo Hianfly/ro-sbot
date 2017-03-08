@@ -55,7 +55,7 @@ public class TextScanner extends Scanner {
     public BufferedImage toBufferedImage() {
     	return toBufferedImage(pixels);
     }
-    public void onTextChanged(String[] rowTexts) {
+    public void onTextChanged(String[] rowTexts, boolean notify) {
     	
     }
     
@@ -418,10 +418,12 @@ public class TextScanner extends Scanner {
 	private long lastTextChangedTime = 0;
     private void computeTextChanged() {
     	boolean change = false;
+    	boolean notify = false;
 		long now = System.currentTimeMillis();
 		P : { 
     		if (lastTextChangedTime == 0 || now - lastTextChangedTime > 1000) {
     			change = true;
+    			notify = true;
 				break P;
     		}
 			if (textListOld.isEmpty() && !textListNew.isEmpty()) {
@@ -441,7 +443,7 @@ public class TextScanner extends Scanner {
 		}
 		if (change) {
 			lastTextChangedTime = now;
-			onTextChanged(textListNew.toArray(new String[0]));
+			onTextChanged(textListNew.toArray(new String[0]), notify);
 		}
     }
     

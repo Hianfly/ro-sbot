@@ -23,8 +23,8 @@ public class InfoScanner extends TextScanner {
 	private int    lastSpMax = 0;
 	
 	@Override
-	public void onTextChanged(String[] rowTexts) {
-		super.onTextChanged(rowTexts);
+	public void onTextChanged(String[] rowTexts, boolean notify) {
+		super.onTextChanged(rowTexts, notify);
 		int    lv    = 0;
 		String job   = "";
 		int    jobLv = 0;
@@ -60,7 +60,7 @@ public class InfoScanner extends TextScanner {
 		if (exp != lastExp) {
 			onExpChanged(lastExp, exp);
 		}
-		if (hp != lastHp) {
+		if (hp != lastHp || notify) {
 			onHpChanged(lastHp, hp, lastHpMax, hpMax);
 		}
 		if (sp != lastSp) {
