@@ -11,6 +11,7 @@ import com.hiandev.rosbot.scanner.ScannerFrame;
 import com.hiandev.rosbot.scanner.battle.Cell;
 import com.hiandev.rosbot.scanner.battle.ItemScanner;
 import com.hiandev.rosbot.scanner.text.info.InfoScanner;
+import com.hiandev.rosbot.scanner.text.message.MessageScanner;
 
 /**
  * @author Hian
@@ -24,9 +25,12 @@ public class Main {
 
 	MainItemScanner itemScanner = null;
 	MainInfoScanner infoScanner = null;
+	MainMessageScanner mssgScanner = null;
 	
 	public Main() {
 		try {
+			mssgScanner = new MainMessageScanner(5, 600);
+			mssgScanner.setScannerFrame(new ScannerFrame());
 			itemScanner = new MainItemScanner(5, 30);
 //			itemScanner.setScannerFrame(new ScannerFrame());
 			infoScanner = new MainInfoScanner(5, 30);
@@ -34,8 +38,17 @@ public class Main {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		itemScanner.start();
-		infoScanner.start();
+//		itemScanner.start();
+//		infoScanner.start();
+		mssgScanner.start();
+	}
+	
+	public class MainMessageScanner extends MessageScanner {
+		
+		public MainMessageScanner(int _x, int _y) throws AWTException {
+			super (_x, _y);
+		}
+		
 	}
 	
 	public class MainInfoScanner extends InfoScanner {

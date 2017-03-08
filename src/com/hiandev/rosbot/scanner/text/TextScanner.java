@@ -259,6 +259,9 @@ public class TextScanner extends Scanner {
     	ASSET_MAP.clear();
 		File[] assets = new File(assetsDir).listFiles();
 		for (File file : assets) {
+			if (!file.getName().endsWith(".txt")) {
+				continue;
+			}
 			BufferedReader br = null;
     		StringBuilder sb = null;
     		String ln = null;
@@ -277,6 +280,9 @@ public class TextScanner extends Scanner {
 	    		}
 	    		else {
 	    			kv = st.split(":");
+	    			if (kv.length < 2) {
+	    				System.out.println(file.getAbsolutePath());
+	    			}
 	    		}
 	    		ASSET_MAP.put(kv[1].trim(), kv[0].trim());
 	    	} catch (Exception e) {
