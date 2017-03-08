@@ -11,8 +11,7 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 
 import com.hiandev.rosbot.Service;
-import com.hiandev.rosbot.event.Event;
-import com.hiandev.rosbot.ui.ScannerFrame;
+import com.hiandev.rosbot.scanner.battle.Cell;
 
 public abstract class Scanner extends Service {
 	
@@ -116,24 +115,8 @@ public abstract class Scanner extends Service {
 	 * 
 	 * 
 	 */
-	public int[] floorPixels(int[] samples, int threshold) {
-		for (int x = 0; x < samples.length; x++) {
-			samples[x] = (samples[x] / threshold) * threshold;
-		}
-		return samples;
-	}
-	public int[] toPixels(int[][] pixels2D) {
-		int[] pixels = new int[pixels2D.length * pixels2D[0].length];
-		int   index = 0;
-		for (int y = 0; y < pixels2D.length; y++) {
-			for (int x = 0; x < pixels2D[y].length; x++) {
-				pixels[index++] = pixels2D[y][x];
-			}
-		}
-		return pixels;
-	}
 	public BufferedImage toBufferedImage(int[][] pixels) {
-		return toBufferedImage(toPixels(pixels));
+		return toBufferedImage(Pixel.toPixels(pixels));
 	}
 	public BufferedImage toBufferedImage(int[] pixels) {
 		BufferedImage  bi = getScreenImage();

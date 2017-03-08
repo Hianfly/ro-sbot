@@ -5,12 +5,6 @@ public class Pixel {
 	public static final int[] clonePixel(int[] pixel) {
 		return new int[] { pixel[0], pixel[1], pixel[2] };
 	}
-	
-	public static final long createPixelKey(int[] pixel) {
-    	return ((pixel[0] * 1000000l) +  1000000000l) + 
-			   ((pixel[1] *    1000l) +     1000000l) +
-			   ((pixel[2] *       1l) +        1000l);
-    }
 	public static final boolean isMatch(int[] pixels, int offset, int r, int g, int b) {
 		return (r == -1 || pixels[offset + 0] == r) && 
 			   (g == -1 || pixels[offset + 1] == g) && 
@@ -54,6 +48,27 @@ public class Pixel {
 		pixels[offset + 1] = pixel[1];
 		pixels[offset + 2] = pixel[2];
 	}
+	public static final int[] floorPixels(int[] samples, int threshold) {
+		for (int x = 0; x < samples.length; x++) {
+			samples[x] = (samples[x] / threshold) * threshold;
+		}
+		return samples;
+	}
+	public static final int[] toPixels(int[][] pixels2D) {
+		int[] pixels = new int[pixels2D.length * pixels2D[0].length];
+		int   index = 0;
+		for (int y = 0; y < pixels2D.length; y++) {
+			for (int x = 0; x < pixels2D[y].length; x++) {
+				pixels[index++] = pixels2D[y][x];
+			}
+		}
+		return pixels;
+	}
+	public static final long createPixelKey(int[] pixel) {
+    	return ((pixel[0] * 1000000l) +  1000000000l) + 
+			   ((pixel[1] *    1000l) +     1000000l) +
+			   ((pixel[2] *       1l) +        1000l);
+    }
 	public static final int[] floorBlueOnePixels(int[] pixels) {
 		for (int i = 0; i < pixels.length; i += 3) {
 			if (pixels[i + 2] == 1) {
@@ -62,7 +77,6 @@ public class Pixel {
 		}
 		return pixels;
 	}
-	
 	public static final int[] getAveragePixels(int[][] pixels, int prmFloorThreshold, boolean skipWhite, boolean changeSourcePixels) {
 		int r = 0;
 		int g = 0;

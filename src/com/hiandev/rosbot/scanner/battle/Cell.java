@@ -1,4 +1,4 @@
-package com.hiandev.rosbot.scanner;
+package com.hiandev.rosbot.scanner.battle;
 
 public class Cell {
 	

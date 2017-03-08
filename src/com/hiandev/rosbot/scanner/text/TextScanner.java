@@ -1,4 +1,4 @@
-package com.hiandev.rosbot.scanner;
+package com.hiandev.rosbot.scanner.text;
 
 import java.awt.AWTException;
 import java.awt.image.BufferedImage;
@@ -10,6 +10,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+import com.hiandev.rosbot.scanner.Pixel;
+import com.hiandev.rosbot.scanner.Scanner;
 
 public class TextScanner extends Scanner {
 
@@ -17,13 +19,11 @@ public class TextScanner extends Scanner {
     	super (_x, _y, _w, _h);
     	setInterval(1000);
     }
-
     @Override
     protected void onPreExecute() {
     	super.onPreExecute();
     	loadAssets();
     }
-    
     @Override
 	protected void onExecute() {
 		super.onExecute();
@@ -37,15 +37,26 @@ public class TextScanner extends Scanner {
 			e.printStackTrace();
 		}
 	}
-    
     private boolean dump = false;
     @Override
     protected void onPostExecute() {
     	super.onPostExecute();
-    	if (!dump) {
-    		 dump = true;
-    		 dumpAssets();
-    	}
+    	try {
+    		computeTextChanged();
+	    	if (!dump) {
+	    		 dump = true;
+	    		 dumpAssets();
+	    	}
+    	} catch (Exception e) {
+			e.printStackTrace();
+		}
+    }
+    @Override
+    public BufferedImage toBufferedImage() {
+    	return toBufferedImage(pixels);
+    }
+    public void onTextChanged(String[] rowTexts) {
+    	
     }
     
     /*
@@ -57,7 +68,7 @@ public class TextScanner extends Scanner {
     private void createPixels(int floorThreshold) {
     	pixels = new int[_h][_w * 3];
 		for (int y = 0; y < _h; y++) {
-			pixels[y] = floorPixels(getScreenImage().getRaster().getPixels(0, y, _w, 1, (int[]) null), floorThreshold);
+			pixels[y] = Pixel.floorPixels(getScreenImage().getRaster().getPixels(0, y, _w, 1, (int[]) null), floorThreshold);
 		}
     }
     private int[][] pixelTexts   = new int[][] { { 0, 0, 0 } };
@@ -232,26 +243,6 @@ public class TextScanner extends Scanner {
 			}
 			sb.append(ASSET_MAP.get(key) == null ? "?" : ASSET_MAP.get(key));
 		}
-		boolean change = false;
-		P : { 
-			if (textListOld.isEmpty() && !textListNew.isEmpty()) {
-				change = true;
-				break P;
-			}
-			if (textListNew.size() != textListOld.size()) {
-				change = true;
-				break P;
-			}
-			for (int x = 0; x < textListNew.size(); x++) {
-				if (!textListNew.get(x).equals(textListOld.get(x))) {
-					change = true;
-					break P;
-				}
-			}
-		}
-		if (change) {
-			onTextChanged(textListNew.toArray(new String[0]));
-		}
     }
 
     /*
@@ -410,18 +401,27 @@ public class TextScanner extends Scanner {
      * 
      * 
      */
-    @Override
-    public BufferedImage toBufferedImage() {
-    	return toBufferedImage(pixels);
-    }
-    
-    /*
-     * 
-     * 
-     * 
-     */
-    public void onTextChanged(String[] rowTexts) {
-    	
+    private void computeTextChanged() {
+    	boolean change = false;
+		P : { 
+			if (textListOld.isEmpty() && !textListNew.isEmpty()) {
+				change = true;
+				break P;
+			}
+			if (textListNew.size() != textListOld.size()) {
+				change = true;
+				break P;
+			}
+			for (int x = 0; x < textListNew.size(); x++) {
+				if (!textListNew.get(x).equals(textListOld.get(x))) {
+					change = true;
+					break P;
+				}
+			}
+		}
+		if (change) {
+			onTextChanged(textListNew.toArray(new String[0]));
+		}
     }
     
 }

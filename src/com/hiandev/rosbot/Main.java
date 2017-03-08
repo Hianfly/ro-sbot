@@ -7,11 +7,10 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
-import com.hiandev.rosbot.event.ItemEvent;
-import com.hiandev.rosbot.scanner.Cell;
-import com.hiandev.rosbot.scanner.InfoScanner;
-import com.hiandev.rosbot.scanner.ItemScanner;
-import com.hiandev.rosbot.ui.ScannerFrame;
+import com.hiandev.rosbot.scanner.ScannerFrame;
+import com.hiandev.rosbot.scanner.battle.Cell;
+import com.hiandev.rosbot.scanner.battle.ItemScanner;
+import com.hiandev.rosbot.scanner.text.info.InfoScanner;
 
 /**
  * @author Hian
@@ -23,15 +22,13 @@ public class Main {
 		new Main();
 	}
 
-	ItemScanner     itemScanner = null;
+	MainItemScanner itemScanner = null;
 	MainInfoScanner infoScanner = null;
 	
 	public Main() {
 		try {
-			itemScanner = new ItemScanner(5, 30);
-			itemScanner.setScannerFrame(new ScannerFrame());
-			itemScanner.setItemEvent( new MainItemEvent(itemScanner));
-
+			itemScanner = new MainItemScanner(5, 30);
+//			itemScanner.setScannerFrame(new ScannerFrame());
 			infoScanner = new MainInfoScanner(5, 30);
 			infoScanner.setScannerFrame(new ScannerFrame());
 		} catch (Exception e) {
@@ -51,10 +48,10 @@ public class Main {
 		protected void onHpChanged(int oldHp, int newHp, int oldHpMax, int newHpMax) {
 			super.onHpChanged(oldHp, newHp, oldHpMax, newHpMax);
 			int percentage = (newHp * 100) / newHpMax;
-			if (percentage < 50) {
+			if (percentage < 70) {
 				keyPush(KeyEvent.VK_X);
 			}
-			if (percentage < 25) {
+			if (percentage < 50) {
 				keyPush(KeyEvent.VK_Z);
 			}
 		}
@@ -66,36 +63,36 @@ public class Main {
 		
 	}
 	
-	public class MainItemEvent extends ItemEvent {
+	public class MainItemScanner extends ItemScanner {
 		
-		public MainItemEvent(ItemScanner scanner) {
-			super (scanner);
+		public MainItemScanner(int _x, int _y) throws AWTException {
+			super (_x, _y);
 		}
 		
 		long teleportIdleInterval    = 1000 * 4; 
 		long teleportDefaultInterval = 1000 * 60 * 2;
 		@Override
-		public int onIdle(ItemEvent event, long duration, int prevMode) {
+		public int onIdle(long duration, int prevMode) {
 			int forceRetry = 0;
 		  	Point point = MouseInfo.getPointerInfo().getLocation();
-		  	if (((int) point.getX() - event.getScanner()._x) > 800 || ((int) point.getY() - event.getScanner()._y) > 600) {
+		  	if (((int) point.getX() - _x) > 800 || ((int) point.getY() - _y) > 600) {
 		  		return forceRetry;
 		  	}
 		  	if (teleportDefaultInterval > 0 && duration > teleportDefaultInterval) {
-		  		event.teleport();
+		  		teleport();
 		  		return forceRetry;
 		  	}
 
-		  	if (duration == 0 && prevMode == ItemEvent.CHAR_MODE_ATTACKING) {
-		  		int _x = event.getScanner().getMiddleCellX();
-		  		int _y = event.getScanner().getMiddleCellY();
+		  	if (duration == 0 && prevMode == ItemScanner.MODE_ATTACK) {
+		  		int _x = getMiddleCellX();
+		  		int _y = getMiddleCellY();
 		  		int _f = 1;
 		  		while (_f == 1) {
 			  		L : for (int x = _x -  8; x <= _x + 8; x += 8) {
 				  		for (int y = _y + 16; y >= _y - 8; y -= 8) { 
-					  		switch (event.hoverCell(x, y)) {
-					  		case ItemEvent.CHAR_MODE_TARGETING: _f = 2; event.attack(); break L;
-							case ItemEvent.CHAR_MODE_PICKING  : _f = 1; event.pick()  ; break L;
+					  		switch (hoverCell(x, y)) {
+					  		case ItemScanner.MODE_TARGET: _f = 2; attack(); break L;
+							case ItemScanner.MODE_PICK  : _f = 1; pick()  ; break L;
 						  	default: break;
 					  		}
 				  		}
@@ -116,28 +113,28 @@ public class Main {
 				Collections.sort(scanList, new ItemScanner.CellDistanceComparator());
 				int index = new Random().nextInt(scanList.size() > 10 ? 10: scanList.size());
 				Cell cell = scanList.get(index);
-				switch (event.hoverCell(cell)) {
-				case ItemEvent.CHAR_MODE_TARGETING:
+				switch (hoverCell(cell)) {
+				case ItemScanner.MODE_TARGET:
 					forceRetry = 0; 
-					event.attack();
+					attack();
 					break;
-				case ItemEvent.CHAR_MODE_PICKING:
+				case ItemScanner.MODE_PICK:
 					forceRetry = 1; 
-					event.pick();
+					pick();
 					break;
 				default:
 					forceRetry = 1;
-					event.cancel();
+					cancel();
 					if (teleportIdleInterval > 0 && duration > teleportIdleInterval) {
-						event.teleport();
+						teleport();
 					}
 					break;
 				}
 			}
 			else {
-				event.cancel();
+				cancel();
 				if (teleportIdleInterval > 0 && duration > teleportIdleInterval) {
-					event.teleport();
+					teleport();
 				}
 			}
 			return forceRetry;

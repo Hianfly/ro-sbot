@@ -1,16 +1,13 @@
-package com.hiandev.rosbot.scanner;
+package com.hiandev.rosbot.scanner.battle;
 
 import java.awt.AWTException;
-import java.awt.Point;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.Raster;
-import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.concurrent.ConcurrentHashMap;
-
-import com.hiandev.rosbot.event.ItemEvent;
+import com.hiandev.rosbot.scanner.Pixel;
+import com.hiandev.rosbot.scanner.Scanner;
 
 public class ItemScanner extends Scanner {
 
@@ -33,7 +30,7 @@ public class ItemScanner extends Scanner {
     	return s;
     }
     @Override
-	protected void onExecute() {
+	public void onExecute() {
 		super.onExecute();
 		try {
 			createCellMatrix();
@@ -50,13 +47,19 @@ public class ItemScanner extends Scanner {
 		}
 	}
     @Override
-    protected void onPostExecute() {
+    public void onPostExecute() {
     	super.onPostExecute();
-    	if (itemEvent != null) {
-    		itemEvent.execute();
-    	}
+		computeCharacterMovement();
+		computeCharacterMode();
     }
-    
+	@Override
+    public BufferedImage toBufferedImage() {
+		return toBufferedImage(toPixels(cellMatrix));
+    }
+	protected int onIdle(long duration, int prevMode) {
+		return 0;
+	}
+	
     /*
      * 
      * 
@@ -64,19 +67,25 @@ public class ItemScanner extends Scanner {
      */
 	private int middleCellX = 0;
     private int middleCellY = 0;
-    public int getMiddleCellX() {
+    private int cellSize = 0;    
+    public  int getMiddleCellX() {
     	return middleCellX;
     }
-    public int getMiddleCellY() {
+    public  int getMiddleCellY() {
     	return middleCellY;
     }
-    public int getCellDistance(int x, int y) {
+    public  int getCellDistance(int x, int y) {
     	return Math.abs(middleCellX - x) + Math.abs(middleCellY - y);
     }
-	private int cellSize = 0;
-    public int getCellSize() {
+    public  int getCellSize() {
     	return cellSize;
     }
+    
+    /*
+     * 
+     * 
+     * 
+     */
     private int[][] cellNeutral = null;   
     private void createNeutralCell() {
     	// Battle Msg
@@ -145,7 +154,7 @@ public class ItemScanner extends Scanner {
      * 
      */
 	private Cell[][] cellMatrix = null;
-	public Cell[][] getCellMatrix() {
+	public  Cell[][] getCellMatrix() {
 		return cellMatrix;
 	}
 	private void createCellMatrix() {
@@ -276,7 +285,7 @@ public class ItemScanner extends Scanner {
 			}
 		}
     }
-	public ArrayList<Cell> getNonWhiteCells(int maxDistance) {
+	public  ArrayList<Cell> getNonWhiteCells(int maxDistance) {
 		ArrayList<Cell> list = new ArrayList<>();
 		for (int y = 0; y < cellMatrix.length; y++) {
 			for (int x = 0; x < cellMatrix[y].length; x++) {
@@ -368,10 +377,10 @@ public class ItemScanner extends Scanner {
 				Math.abs(oldSumm[1] - newSumm[1]) > threshold &&
 				Math.abs(oldSumm[2] - newSumm[2]) > threshold;
 	}
-	public int getMotionSize() {
+	public  int getMotionSize() {
     	return motionSize;
     }
-    public ArrayList<Cell> getMotionCells() {
+    public  ArrayList<Cell> getMotionCells() {
     	ArrayList<Cell> list = new ArrayList<>();
     	for (int y = 0; y < cellMatrix.length; y++) {
 			for (int x = 0; x < cellMatrix[y].length; x++) {
@@ -392,7 +401,7 @@ public class ItemScanner extends Scanner {
      * 
      * 
      */
-    private ConcurrentHashMap<Long, String> ITEM_PIXEL_MAP = new ConcurrentHashMap<Long, String>();
+    private final ConcurrentHashMap<Long, String> ITEM_PIXEL_MAP = new ConcurrentHashMap<Long, String>();
     private void createItemProfile() {
 		for (int y = 0; y < cellMatrix.length; y++) {
 			for (int x = 0; x < cellMatrix[y].length; x++) {
@@ -416,10 +425,10 @@ public class ItemScanner extends Scanner {
 			}
 		}
 	}
-    public int getItemPixelMapSize() {
+    public  int getItemPixelMapSize() {
 		return ITEM_PIXEL_MAP.size();
 	}
-	public ArrayList<Cell> findItemCells(ArrayList<Cell> cellList, int threshold) {
+	public  ArrayList<Cell> findItemCells(ArrayList<Cell> cellList, int threshold) {
 		ArrayList<Cell> itemList = new ArrayList<>();
 	  	for (Cell cell : cellList) {
 	  		for (int y = 0; y < cell.pixels.length; y++) {
@@ -452,23 +461,6 @@ public class ItemScanner extends Scanner {
 	 * 
 	 * 
 	 */
-	private ItemEvent itemEvent = null;
-	public void setItemEvent(ItemEvent itemEvent) {
-		this.itemEvent = itemEvent;
-	}
-	public ItemEvent getItemEvent() {
-		return itemEvent;
-	}
-	
-    /*
-     *
-     * 
-     * 
-     */
-	@Override
-    public BufferedImage toBufferedImage() {
-		return toBufferedImage(toPixels(cellMatrix));
-    }
     public static class CellDistanceComparator implements Comparator<Cell> {
     	@Override
 		public int compare(Cell arg0, Cell arg1) {
@@ -476,25 +468,188 @@ public class ItemScanner extends Scanner {
 		}
     }
     
+    
+    // -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
+    
+	
+	private int  charMove = 0;
+	private void computeCharacterMovement() {
+		if (getMotionSize() > getCellSize() * 0.7) {
+			charMove = 1;
+    	}
+		else {
+			charMove = 0;
+		}
+	}
+	
 	/*
 	 * 
 	 * 
 	 * 
 	 */
-	public static void main(String[] args) {
+    public static final int MODE_IDLE   = 0;
+	public static final int MODE_TARGET = 1;
+	public static final int MODE_ATTACK = 2;
+	public static final int MODE_PICK   = 3;
+	private int  charMode            = 0;
+	private int  detectionForce      = 0;
+	private long detectionUpdateTime = 0;
+	private long detectionInterval   = 1500; // jangan lebih kecil dr 1 dtk untuk menghindari cellChangedData
+	private long attackUpdateTime    = 0;
+	private long attackTimeout       = 1000 * 20;
+	private long attackStartTime     = 0;
+	private int  idleNumSignal       = 0;
+	private long idleUpdateTime      = 0;
+	private void computeCharacterMode() {
     	try {
-//    		ScreenRobot sr = new ScreenRobot(5, 20);
-//    		sr.onCaptureScreen();
-//    		BattleScanner scanner = new BattleScanner(sr);
-//    		scanner.onExecute();
-//    		/*
-//			 * 
-//			 */
-//			BufferedImage bw  = scanner.createCellMatrixImage();
-//			ImageIO.write(bw, "png", new File("./test-" + System.currentTimeMillis() + ".png"));
+	    	long     now = System.currentTimeMillis();
+	    	int[] pixels = MouseHelper.capturePixels(this, false, 10);
+    		int  oldMode = charMode;
+	    	int  newMode = computeCharacterMode(pixels, now);
+	    	/*
+	    	 * Dont modify code below...
+	    	 */
+	    	if (charMode == MODE_ATTACK && newMode == MODE_IDLE && now - attackUpdateTime > 1000) {
+    			idleNumSignal = 1;
+    		}
+	    	if (now - detectionUpdateTime < detectionInterval && detectionForce == 0) {
+	    		return;
+	    	}
+	    	detectionUpdateTime = now;
+	    	detectionForce = 0;
+	    	/*
+	    	 * Modify code here...
+	    	 */
+	    	P : {
+	    		if (newMode == MODE_ATTACK && idleNumSignal == 0) {
+	    			if (now - attackStartTime > attackTimeout) {
+	    				idleNumSignal = 1;
+	    			}
+	    			else {
+	    				attackUpdateTime = now;
+	    			}
+  					break P;
+	    		}
+	    		if (newMode == MODE_ATTACK && idleNumSignal == 1) {
+	   	    		idleNumSignal = 0;
+		    		charMode = MODE_IDLE;
+		    		if (charMove != 1) {
+	    				idleUpdateTime = idleUpdateTime == 0  ? now : idleUpdateTime;
+		    			detectionForce = onIdle(now - idleUpdateTime, oldMode);
+		    		}
+  					break P;
+	    		}
+		    	if (newMode == MODE_TARGET) {
+		    		charMode = MODE_TARGET;
+		    		break P;
+		    	}
+		    	if (newMode == MODE_IDLE) {
+		    		charMode = MODE_IDLE;
+		    		if (charMove != 1) {
+	    				idleUpdateTime = idleUpdateTime == 0  ? now : idleUpdateTime;
+		    			detectionForce = onIdle(now - idleUpdateTime, oldMode);
+		    		}
+		    		break P;
+		    	}
+	    	}
+	    	System.out.println(oldMode + " : " + newMode + " : " + charMode + "  ---  mv:" + charMove + "  is:" + idleNumSignal + "  fe:" + detectionForce + "  it:" + (idleUpdateTime == 0 ? 0 : now - idleUpdateTime)  + "ms  at:" + (attackUpdateTime == 0 ? 0 : now - attackUpdateTime) + "ms");
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
-    }
+	}
+	private int  computeCharacterMode(int[] pixels, long now) {
+		int newMode = -1;
+		int m = MouseHelper.isMatch(MouseHelper.ASSET_TARGETING, pixels, 4, 20) ? MODE_TARGET : 
+				MouseHelper.isMatch(MouseHelper.ASSET_ATTACKING, pixels, 4, 20) ? MODE_ATTACK : 
+				MouseHelper.isMatch(MouseHelper.ASSET_PICKING,   pixels, 4, 20) ? MODE_PICK   : 
+	          	MODE_IDLE;
+		P : {
+    		if (m == MODE_ATTACK) {
+   				newMode = (charMode == MODE_IDLE) ? MODE_IDLE : MODE_ATTACK;
+    			break P;
+    		}
+    		if (m == MODE_IDLE) {
+   				newMode = (charMode == MODE_ATTACK && charMove == 1) ? MODE_ATTACK : MODE_IDLE;
+    			break P;
+    		}
+			newMode = m;
+		}
+		return newMode;
+	}
 
+	/*
+	 * 
+	 * 
+	 * 
+	 */
+	private int  mouseCellX = 5;
+	private int  mouseCellY = 102;
+    public int hoverCell(Cell cell) {
+    	return hoverCell(cell._cx, cell._cy);
+    }
+    public int hoverCell(int _cx, int _cy) {
+    	int r = -1;
+    	mouseGotoCell(_cx, _cy);
+    	sleep(20);
+	    int[] pixels = MouseHelper.capturePixels(this, true, 10);
+    	if (MouseHelper.isMatch(MouseHelper.ASSET_TARGETING, pixels, 4, 20)) {
+    		r = charMode = MODE_TARGET;
+    	}
+    	else if (MouseHelper.isMatch(MouseHelper.ASSET_PICKING, pixels, 4, 20)) {
+    		r = charMode = MODE_PICK;
+    	}
+    	return r;
+    }
+    public int cancel() {
+    	int r = 0;
+    	mouseGotoCell(mouseCellX, mouseCellY);
+    	sleep(20);
+		return r;
+    }
+    public int attack() {
+    	int r = 0;
+    	attackUpdateTime = attackStartTime = System.currentTimeMillis();
+    	idleUpdateTime = 0;
+    	charMode = MODE_ATTACK;
+    	mouseLeftClick();
+    	sleep(20);
+    	mouseGotoCell(mouseCellX, mouseCellY);
+    	sleep(20);
+    	return r;
+    }
+    public int pick() {
+    	int r = 0;
+    	attackUpdateTime = attackStartTime = System.currentTimeMillis();
+    	idleUpdateTime = 0;
+    	charMode = MODE_PICK;
+    	mouseLeftClick();
+    	sleep(20);
+    	mouseGotoCell(mouseCellX, mouseCellY);
+    	sleep(20);
+    	charMode = MODE_IDLE;
+    	return r;
+    }
+    public int teleport() {
+    	int r = 0;
+    	idleUpdateTime = 0;
+		keyPush(KeyEvent.VK_Z);
+    	sleep(20);
+		return r;
+    }
+    public int move(Cell cell) {
+    	int r = 0;
+    	idleUpdateTime = 0;
+    	mouseGotoCell(cell._cx, cell._cy);
+    	sleep(20);
+    	mouseLeftClick();
+    	sleep(20);
+    	mouseGotoCell(mouseCellX, mouseCellY);
+    	sleep(20);
+    	return r;
+    }
+	
 }

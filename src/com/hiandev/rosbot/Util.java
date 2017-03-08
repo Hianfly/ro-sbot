@@ -1,18 +1,23 @@
-package com.hiandev.rosbot.util;
+package com.hiandev.rosbot;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Set;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.hiandev.rosbot.scanner.Cell;
-
-public class Config {
-
+public class Util {
+	
+	public static final String lpad(int i, int padLength, char padChar) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(i);
+		while (sb.length() < padLength) {
+			sb.insert(0, padChar);
+		}
+		return sb.toString();
+	}
+	
 	public static final JSONObject loadJSON(String filename) {
 		JSONObject json = null;
 		BufferedReader reader = null;

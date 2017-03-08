@@ -1,6 +1,8 @@
-package com.hiandev.rosbot.scanner;
+package com.hiandev.rosbot.scanner.text.info;
 
 import java.awt.AWTException;
+
+import com.hiandev.rosbot.scanner.text.TextScanner;
 
 public class InfoScanner extends TextScanner {
 	
