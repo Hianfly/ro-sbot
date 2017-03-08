@@ -44,10 +44,10 @@ public class Main {
 			hpspEvent      = new MainHpSpEvent(hpspScanner);
 			hpspocrScanner = new MainHpSpOcrScanner(8, 100);
 
-			scannerFrame   = new ScannerFrame(hpspocrScanner);
-//			hpspScanner.start();
-//			itemScanner.start();
-			hpspocrScanner.start();
+			scannerFrame   = new ScannerFrame(itemScanner);
+			hpspScanner.start();
+			itemScanner.start();
+//			hpspocrScanner.start();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -104,8 +104,8 @@ public class Main {
 		  		int _y = event.getScanner().getMiddleCellY();
 		  		int _f = 1;
 		  		while (_f == 1) {
-			  		L : for (int x = _x - 10; x <= _x + 10; x += 10) {
-				  		for (int y = _y + 20; y >= _y - 10; y -= 10) { 
+			  		L : for (int x = _x -  8; x <= _x + 8; x += 8) {
+				  		for (int y = _y + 16; y >= _y - 8; y -= 8) { 
 					  		switch (event.hoverCell(x, y)) {
 					  		case ItemEvent.CHAR_MODE_TARGETING: _f = 2; event.attack(); break L;
 							case ItemEvent.CHAR_MODE_PICKING  : _f = 1; event.pick()  ; break L;
@@ -203,20 +203,20 @@ public class Main {
 		@Override
 		public boolean onStart() {
 			boolean start = super.onStart();
-			scannerFrame.show();
-			sleep(1000);
+//			scannerFrame.show();
+//			sleep(1000);
 			return start;
 		}
 		@Override
 		public void onPreExecute() {
 			super.onPreExecute();
-			scannerFrame.clearCells(5);
+//			scannerFrame.clearCells(5);
 		}
 		@Override
 		public void onPostExecute() {
 			super.onPostExecute();
 			itemEvent.execute();
-			scannerFrame.updatePreview(itemScanner.createCellMatrixImage());
+//			scannerFrame.updatePreview(itemScanner.createCellMatrixImage());
 		}
 	}
 	
