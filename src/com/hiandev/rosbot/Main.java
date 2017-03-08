@@ -43,16 +43,21 @@ public class Main {
 		public MainInfoScanner(int _x, int _y) throws AWTException {
 			super (_x, _y);
 		}
-		
+		private long lastTeleportTime = 0;
 		@Override
 		protected void onHpChanged(int oldHp, int newHp, int oldHpMax, int newHpMax) {
 			super.onHpChanged(oldHp, newHp, oldHpMax, newHpMax);
 			int percentage = (newHp * 100) / newHpMax;
-			if (percentage < 70) {
-				keyPush(KeyEvent.VK_X);
+			if (percentage < 60) {
+				long now = System.currentTimeMillis();
+				if (lastTeleportTime == 0 || now - lastTeleportTime > 5000) {
+					keyPush(KeyEvent.VK_Z);
+					sleep(20);
+				}
 			}
-			if (percentage < 50) {
-				keyPush(KeyEvent.VK_Z);
+			if (percentage < 80) {
+				keyPush(KeyEvent.VK_X);
+				sleep(20);
 			}
 		}
 		

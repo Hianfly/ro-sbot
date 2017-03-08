@@ -37,7 +37,7 @@ public class TextScanner extends Scanner {
 			e.printStackTrace();
 		}
 	}
-    private boolean dump = false;
+    private boolean dump = true;
     @Override
     protected void onPostExecute() {
     	super.onPostExecute();
@@ -409,9 +409,15 @@ public class TextScanner extends Scanner {
      * 
      * 
      */
+	private long lastTextChangedTime = 0;
     private void computeTextChanged() {
     	boolean change = false;
+		long now = System.currentTimeMillis();
 		P : { 
+    		if (lastTextChangedTime == 0 || now - lastTextChangedTime > 1000) {
+    			change = true;
+				break P;
+    		}
 			if (textListOld.isEmpty() && !textListNew.isEmpty()) {
 				change = true;
 				break P;
@@ -428,6 +434,7 @@ public class TextScanner extends Scanner {
 			}
 		}
 		if (change) {
+			lastTextChangedTime = now;
 			onTextChanged(textListNew.toArray(new String[0]));
 		}
     }

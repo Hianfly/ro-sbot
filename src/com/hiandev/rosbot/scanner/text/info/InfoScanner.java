@@ -12,7 +12,7 @@ public class InfoScanner extends TextScanner {
 		setTextPixels(new int[][] { { 0, 0, 0 }, { 250, 0, 0 } });
 		setInterval(100);
 	}
-
+	
 	private int    lastLv    = 0;
 	private String lastJob   = "";
 	private int    lastJobLv = 0;
