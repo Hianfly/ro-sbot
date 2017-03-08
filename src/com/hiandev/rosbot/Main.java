@@ -39,28 +39,22 @@ public class Main {
 	}
 	
 	public class MainInfoScanner extends InfoScanner {
-
 		public MainInfoScanner(int _x, int _y) throws AWTException {
 			super (_x, _y);
 		}
-		private long lastTeleportTime = 0;
 		@Override
 		protected void onHpChanged(int oldHp, int newHp, int oldHpMax, int newHpMax) {
 			super.onHpChanged(oldHp, newHp, oldHpMax, newHpMax);
 			int percentage = (newHp * 100) / newHpMax;
-			if (percentage < 60) {
-				long now = System.currentTimeMillis();
-				if (lastTeleportTime == 0 || now - lastTeleportTime > 5000) {
-					keyPush(KeyEvent.VK_Z);
-					sleep(20);
-				}
-			}
 			if (percentage < 80) {
 				keyPush(KeyEvent.VK_X);
-				sleep(20);
+				sleep(100);
+			}
+			if (percentage < 50) {
+				keyPush(KeyEvent.VK_Z);
+				sleep(100);
 			}
 		}
-		
 		@Override
 		protected void onSpChanged(int oldSp, int newSp, int oldSpMax, int newSpMax) {
 			super.onSpChanged(oldSp, newSp, oldSpMax, newSpMax);
