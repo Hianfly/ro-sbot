@@ -262,6 +262,8 @@ public class TextScanner extends Scanner {
 			BufferedReader br = null;
     		StringBuilder sb = null;
     		String ln = null;
+    		String st = null;
+    		String[] kv = null;
 	    	try {
 	    		br = new BufferedReader(new FileReader(file));
 	    		sb = new StringBuilder();
@@ -269,8 +271,14 @@ public class TextScanner extends Scanner {
 	    			sb.append(ln).append("\n");
 	    		}
 	    		sb.deleteCharAt(sb.length() - 1);
-	    		String[] e = sb.toString().split(":");
-	    		ASSET_MAP.put(e[1].trim(), e[0]);
+	    		st = sb.toString();
+	    		if (st.startsWith(":")) {
+	    			kv = new String[] { ":", st.substring(2) };
+	    		}
+	    		else {
+	    			kv = st.split(":");
+	    		}
+	    		ASSET_MAP.put(kv[1].trim(), kv[0].trim());
 	    	} catch (Exception e) {
 	    		e.printStackTrace();
 	    	} finally {
