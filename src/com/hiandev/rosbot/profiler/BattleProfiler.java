@@ -1,4 +1,4 @@
-//package com.hiandev.rosbot.profiler;
+package com.hiandev.rosbot.profiler;
 //
 //import java.io.BufferedReader;
 //import java.io.BufferedWriter;
@@ -14,6 +14,9 @@
 //import com.hiandev.rosbot.scanner.Pixel;
 //import com.hiandev.rosbot.util.Text;
 //
+public class BattleProfiler {
+	
+}
 //public class BattleProfiler extends Profiler {
 //	
 //	public BattleProfiler() {
