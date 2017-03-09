@@ -34,9 +34,9 @@ public class ItemScanner extends Scanner {
 		super.onExecute();
 		try {
 			createCellMatrix();
-			removeDarkPixels(50);
-			removeBackground(80);
-			createNewCellSummary(15);
+			removeDarkPixels(50); // 50
+			removeBackground(80); // 80
+			createNewCellSummary(15); // 15
 			createCellMotion(0);
 			removeCellMotionNoise();
 			renderCellMotion();
@@ -498,9 +498,10 @@ public class ItemScanner extends Scanner {
 	private int  charMode            = 0;
 	private int  detectionForce      = 0;
 	private long detectionUpdateTime = 0;
-	private long detectionInterval   = 1500; // jangan lebih kecil dr 1 dtk untuk menghindari cellChangedData
+	private long detectionInterval   = 500; // jangan lebih kecil dr 1 dtk untuk menghindari cellChangedData
 	private long attackUpdateTime    = 0;
 	private long attackTimeout       = 1000 * 20;
+	private long attackInterval      = 350; // 1000
 	private long attackStartTime     = 0;
 	private int  idleNumSignal       = 0;
 	private long idleUpdateTime      = 0;
@@ -513,7 +514,7 @@ public class ItemScanner extends Scanner {
 	    	/*
 	    	 * Dont modify code below...
 	    	 */
-	    	if (charMode == MODE_ATTACK && newMode == MODE_IDLE && now - attackUpdateTime > 1000) {
+	    	if (charMode == MODE_ATTACK && newMode == MODE_IDLE && now - attackUpdateTime > attackInterval) {
     			idleNumSignal = 1;
     		}
 	    	if (now - detectionUpdateTime < detectionInterval && detectionForce == 0) {

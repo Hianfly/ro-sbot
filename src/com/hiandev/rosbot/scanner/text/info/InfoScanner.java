@@ -1,7 +1,6 @@
 package com.hiandev.rosbot.scanner.text.info;
 
 import java.awt.AWTException;
-
 import com.hiandev.rosbot.scanner.text.TextScanner;
 
 public class InfoScanner extends TextScanner {
@@ -10,29 +9,19 @@ public class InfoScanner extends TextScanner {
 		super (_x, _y, 220, 56);
 		setAssetsDir("./assets/text-info/");
 		setTextPixels(new int[][] { { 0, 0, 0 }, { 250, 0, 0 } });
-		setInterval(100);
+		setInterval(50);
 	}
-	
-	private int    lastLv    = 0;
-	private String lastJob   = "";
-	private int    lastJobLv = 0;
-	private float  lastExp   = 0f;
-	private int    lastHp    = 0;
-	private int    lastHpMax = 0;
-	private int    lastSp    = 0;
-	private int    lastSpMax = 0;
-	
 	@Override
-	public void onTextChanged(String[] rowTexts, boolean notify) {
-		super.onTextChanged(rowTexts, notify);
-		int    lv    = 0;
-		String job   = "";
-		int    jobLv = 0;
-		float  exp   = 0f;
-		int    hp    = 0;
-		int    hpMax = 0;
-		int    sp    = 0;
-		int    spMax = 0;
+	public void onTextChanged(String[] rowTexts) {
+		super.onTextChanged(rowTexts);
+		lv    = 0;
+		job   = "";
+		jobLv = 0;
+		exp   = 0f;
+		hp    = 0;
+		hpMax = 0;
+		sp    = 0;
+		spMax = 0;
 		for (String rowText : rowTexts) {
 			String[] e = rowText.trim().split(" ");
 			if (e[0].startsWith("Lv.")) {
@@ -60,7 +49,7 @@ public class InfoScanner extends TextScanner {
 		if (exp != lastExp) {
 			onExpChanged(lastExp, exp);
 		}
-		if (hp != lastHp || notify) {
+		if (hp != lastHp) {
 			onHpChanged(lastHp, hp, lastHpMax, hpMax);
 		}
 		if (sp != lastSp) {
@@ -80,29 +69,55 @@ public class InfoScanner extends TextScanner {
 				         +  "SP:" + sp  + "/" + spMax + "[ " + (sp * 100 / spMax) + "% ]   "
 				         );
 	}
+
+	private int    lv    = 0;
+	private String job   = "";
+	private int    jobLv = 0;
+	private float  exp   = 0f;
+	private int    hp    = 0;
+	private int    hpMax = 0;
+	private int    sp    = 0;
+	private int    spMax = 0;
+	
+	private int    lastLv    = 0;
+	private String lastJob   = "";
+	private int    lastJobLv = 0;
+	private float  lastExp   = 0f;
+	private int    lastHp    = 0;
+	private int    lastHpMax = 0;
+	private int    lastSp    = 0;
+	private int    lastSpMax = 0;
 	
 	protected void onLvChanged(int oldLv, int newLv) {
 		
 	}
-	
 	protected void onJobChanged(String oldJob, String newJob) {
 		
 	}
-	
 	protected void onJobLvChanged(int oldJobLv, int newJobLv) {
 		
 	}
-	
 	protected void onExpChanged(float oldExp, float newExp) {
 		
 	}
-
 	protected void onHpChanged(int oldHp, int newHp, int oldHpMax, int newHpMax) {
 		
 	}
-
 	protected void onSpChanged(int oldSp, int newSp, int oldSpMax, int newSpMax) {
 		
+	}
+	
+	public int getHp() {
+		return hp;
+	}
+	public int getHpMax() {
+		return hpMax;
+	}
+	public int getSp() {
+		return sp;
+	}
+	public int getSpMax() {
+		return spMax;
 	}
 	
 }

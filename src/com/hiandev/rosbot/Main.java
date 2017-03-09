@@ -29,17 +29,17 @@ public class Main {
 	
 	public Main() {
 		try {
-			mssgScanner = new MainMessageScanner(5, 600);
-			mssgScanner.setScannerFrame(new ScannerFrame());
+			mssgScanner = new MainMessageScanner(5, 571);
+//			mssgScanner.setScannerFrame(new ScannerFrame());
 			itemScanner = new MainItemScanner(5, 30);
-//			itemScanner.setScannerFrame(new ScannerFrame());
+			itemScanner.setScannerFrame(new ScannerFrame());
 			infoScanner = new MainInfoScanner(5, 30);
 			infoScanner.setScannerFrame(new ScannerFrame());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-//		itemScanner.start();
-//		infoScanner.start();
+		itemScanner.start();
+		infoScanner.start();
 		mssgScanner.start();
 	}
 	
@@ -52,20 +52,40 @@ public class Main {
 	}
 	
 	public class MainInfoScanner extends InfoScanner {
+		private int prmPotionThreshold = 80;
+		private int prmTeleportThreshold = 60;
 		public MainInfoScanner(int _x, int _y) throws AWTException {
 			super (_x, _y);
 		}
 		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			try {
+				long now = System.currentTimeMillis();
+				if (lastHpChangedTime > 0 && now - lastHpChangedTime > 3000) {
+					int percentage = (getHp() * 100) / getHpMax();
+					if (percentage < prmPotionThreshold) {
+						keyPush(KeyEvent.VK_X);
+						sleep(50);
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		private long lastHpChangedTime = 0; 
+		@Override
 		protected void onHpChanged(int oldHp, int newHp, int oldHpMax, int newHpMax) {
 			super.onHpChanged(oldHp, newHp, oldHpMax, newHpMax);
+			lastHpChangedTime = System.currentTimeMillis();
 			int percentage = (newHp * 100) / newHpMax;
-			if (percentage < 80) {
-				keyPush(KeyEvent.VK_X);
-				sleep(100);
-			}
-			if (percentage < 50) {
+			if (percentage < prmTeleportThreshold) {
 				keyPush(KeyEvent.VK_Z);
-				sleep(100);
+				sleep(50);
+			}
+			if (percentage < prmPotionThreshold) {
+				keyPush(KeyEvent.VK_X);
+				sleep(50);
 			}
 		}
 		@Override
