@@ -28,23 +28,14 @@ public abstract class Scanner extends Service {
     	boolean start = super.onStart();
 		if (frame != null) {
 	    	frame.show();
-			sleep(1000);
 		}
     	return start;
     }
     
     @Override
-    protected void onPreExecute() {
-    	super.onPreExecute();
-    	if (frame != null) {
-    		frame.clearCells(0);
-    	}
-    }
-    
-    @Override
     protected void onPostExecute() {
     	super.onPostExecute();
-    	if (frame != null) {
+    	if (frame != null && debug) {
     	    frame.updatePreview(toBufferedImage());
     	}
     }
@@ -141,6 +132,19 @@ public abstract class Scanner extends Service {
 	}
 	public ScannerFrame getScannerFrame() {
 		return frame;
+	}
+	
+	/*
+	 * 
+	 * 
+	 * 
+	 */
+	private boolean debug = false;
+	public void setDebug(boolean debug) {
+		this.debug = debug;
+	}
+	public boolean isDebug() {
+		return debug;
 	}
 	
 }

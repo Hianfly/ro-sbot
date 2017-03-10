@@ -7,13 +7,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-
-import com.hiandev.rosbot.scanner.battle.ItemScanner;
 
 public class ScannerFrame {
 	
@@ -23,6 +20,7 @@ public class ScannerFrame {
     }
     
     private JFrame frame = null;
+    private boolean ready = false;
     public final ScannerFrame show() {
     	if (frame != null) {
     		return this;
@@ -38,12 +36,13 @@ public class ScannerFrame {
                 frame = new JFrame("ScannerFrame");
                 frame.setUndecorated(true);
                 frame.setBackground(new Color(0, 0, 0, 0));
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//              frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 frame.add(new FramePanel());
                 frame.setAlwaysOnTop(true);
                 frame.pack();
                 frame.setLocation(scanner._x, scanner._y);
                 frame.setVisible(true);
+                ready = true;
             }
         });
     	return this;
@@ -137,20 +136,23 @@ public class ScannerFrame {
         }
     }
     public final void updatePreview(BufferedImage image) {
-    	clearPreview(0);
+    	if (suppPanel == null) {
+    		return ;
+    	}
+    	if (previewPanel != null) {
+			suppPanel.remove(previewPanel);
+			suppPanel.repaint();
+    	}
     	suppPanel.add(previewPanel = new PreviewPanel(image));
     	previewPanel.setBounds(0, 0, scanner._w, scanner._h);
     }
     public final void clearPreview(int wait) {
+    	if (suppPanel == null) {
+    		return;
+    	}
     	if (previewPanel != null) {
     		suppPanel.remove(previewPanel);
     		suppPanel.repaint();
-	    	if (wait > 0) {
-	    		try {
-	    			Thread.sleep(wait);
-	    		} catch (Exception e) {
-	    		}
-	    	}
     	}
     }
     
@@ -166,52 +168,6 @@ public class ScannerFrame {
         public MainPanel() {
             setOpaque(false);
             setLayout(null);
-        }
-    }
-    
-    /*
-     * 
-     * 
-     * 
-     */
-    
-    private CellPanel cellPanel = null;
-    public final void updateCells(ArrayList<int[]> cellDiff) {
-    	clearCells(0);
-    	mainPanel.add(cellPanel = new CellPanel(cellDiff));
-        cellPanel.setBounds(0, 0, scanner._w, scanner._h);
-    }
-    public final void clearCells(int wait) {
-    	if (cellPanel != null) {
-	    	mainPanel.remove(cellPanel);
-	    	mainPanel.repaint();
-	    	if (wait > 0) {
-	    		try {
-	    			Thread.sleep(wait);
-	    		} catch (Exception e) {
-	    		}
-	    	}
-    	}
-    }
-    class CellPanel extends JPanel {
-    	private ArrayList<int[]> cellDiff = new ArrayList<>();
-        public CellPanel(ArrayList<int[]> cellDiff) {
-        	this.cellDiff = cellDiff;
-            setOpaque(false);
-            setLayout(null);
-        }
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            Graphics2D g2d = (Graphics2D) g.create();
-            g2d.setBackground(getBackground());
-            g2d.setColor(Color.RED);
-            if (cellDiff != null) {
-	            for (int[] r : cellDiff) {
-	            	g2d.drawRect(r[0], r[1], r[2] - 1, r[3] - 1);
-	            }
-            }
-            g2d.dispose();
         }
     }
     

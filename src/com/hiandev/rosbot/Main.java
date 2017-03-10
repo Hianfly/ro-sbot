@@ -12,6 +12,7 @@ import com.hiandev.rosbot.scanner.battle.Cell;
 import com.hiandev.rosbot.scanner.battle.ItemScanner;
 import com.hiandev.rosbot.scanner.text.info.InfoScanner;
 import com.hiandev.rosbot.scanner.text.message.MessageScanner;
+import com.hiandev.rosbot.ui.UIFrame;
 
 /**
  * @author Hian
@@ -26,21 +27,27 @@ public class Main {
 	MainItemScanner itemScanner = null;
 	MainInfoScanner infoScanner = null;
 	MainMessageScanner mssgScanner = null;
+	UIFrame uiFrame = null;
 	
 	public Main() {
 		try {
 			mssgScanner = new MainMessageScanner(5, 571);
-//			mssgScanner.setScannerFrame(new ScannerFrame());
+			mssgScanner.setDebug(false);
+			mssgScanner.setScannerFrame(new ScannerFrame());
 			itemScanner = new MainItemScanner(5, 30);
 			itemScanner.setScannerFrame(new ScannerFrame());
+			itemScanner.setDebug(false);
 			infoScanner = new MainInfoScanner(5, 30);
 			infoScanner.setScannerFrame(new ScannerFrame());
+			infoScanner.setDebug(false);
+			uiFrame = new UIFrame(5, 30 + itemScanner._h, itemScanner._w, itemScanner._h);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		itemScanner.start();
 		infoScanner.start();
 		mssgScanner.start();
+		uiFrame.show();
 	}
 	
 	public class MainMessageScanner extends MessageScanner {
@@ -115,26 +122,27 @@ public class Main {
 		  		return forceRetry;
 		  	}
 
-		  	if (duration == 0 && prevMode == ItemScanner.MODE_ATTACK) {
-		  		int _x = getMiddleCellX();
-		  		int _y = getMiddleCellY();
-		  		int _f = 1;
-		  		while (_f == 1) {
-			  		L : for (int x = _x -  8; x <= _x + 8; x += 8) {
-				  		for (int y = _y + 16; y >= _y - 8; y -= 8) { 
-					  		switch (hoverCell(x, y)) {
-					  		case ItemScanner.MODE_TARGET: _f = 2; attack(); break L;
-							case ItemScanner.MODE_PICK  : _f = 1; pick()  ; break L;
-						  	default: break;
-					  		}
-				  		}
-				  		_f = 0;
-			  		}
-		  		}
-		  		if (_f == 2) {
-		  			return forceRetry = 0;
-		  		}
-		  	}
+//		  	if (duration == 0 && prevMode == ItemScanner.MODE_ATTACK) {
+//		  		int _x = getMiddleCellX();
+//		  		int _y = getMiddleCellY();
+//		  		int _f = 1;
+//		  		while (_f == 1) {
+//			  		L : for (int x = _x -  8; x <= _x + 8; x += 8) {
+//				  		for (int y = _y + 16; y >= _y - 8; y -= 8) { 
+//					  		switch (hoverCell(x, y)) {
+//					  		case ItemScanner.MODE_TARGET: _f = 2; attack(); break L;
+//							case ItemScanner.MODE_PICK  : _f = 1; pick()  ; break L;
+//						  	default: break;
+//					  		}
+//				  		}
+//				  		_f = 0;
+//			  		}
+//		  		}
+//		  		if (_f == 2) {
+//		  			return forceRetry = 0;
+//		  		}
+//		  	}
+		  	
 			ArrayList<Cell> cellList = itemScanner.getNonWhiteCells(30);
 		  	ArrayList<Cell> itemList = itemScanner.findItemCells(cellList, 5);
 		  	ArrayList<Cell> motiList = itemScanner.getMotionCells();
