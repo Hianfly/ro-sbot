@@ -5,13 +5,16 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import com.hiandev.rosbot.scanner.Pixel;
 import com.hiandev.rosbot.scanner.Scanner;
 
-public class ItemScanner extends Scanner {
+public class BattleScanner extends Scanner {
 
-    public ItemScanner(int _x, int _y) throws AWTException {
+    public BattleScanner(int _x, int _y) throws AWTException {
     	super (_x, _y, 800, 600);
     	this.cellSize    = ((_h / Cell.SIZE) * (_w / Cell.SIZE));
     	this.middleCellY = ((_h / 2) / Cell.SIZE) - 3;
@@ -42,6 +45,9 @@ public class ItemScanner extends Scanner {
 			renderCellMotion();
 			createOldCellSummary();
 			createItemProfile();
+			createMotionBounds();
+			expandMotionBounds(2);
+			renderMotionBounds();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -455,7 +461,208 @@ public class ItemScanner extends Scanner {
 	  	}
 	  	return itemList;
 	}
-    
+	
+	/*
+	 * 
+	 * 
+	 * 
+	 */
+	private void merge(int x, int y, MotionBound l, MotionBound t, boolean left, HashMap<Integer, MotionBound> map) {
+		if (l.equals(t)) {
+			if (left) {
+				l._ecx = x > l._ecx ? x : l._ecx;
+			}
+			else {
+				l._bcx = x < l._bcx ? x : l._bcx;
+			}
+			map.put(key(x, y), l);
+		}
+		else {
+			t._bcx = t._bcx < l._bcx ? t._bcx : l._bcx;
+			t._bcy = t._bcy < l._bcy ? t._bcy : l._bcy;
+			t._ecx = t._ecx > l._ecx ? t._ecx : l._ecx;
+			t._ecy = t._ecy > l._ecy ? t._ecy : l._ecy;
+			for (int j = l._bcy; j <= l._ecy; j++) {
+				for (int i = l._bcx; i <= l._ecx; i++) {
+					map.put(key(i, j), t);
+				}
+			}
+			M_ARR.remove(l);
+			map.put(key(x, y), t);
+		}
+	}
+	private ArrayList<MotionBound> M_ARR = new ArrayList<>();
+	private void createMotionBounds() {
+		long now = System.currentTimeMillis();
+		HashMap<Integer, MotionBound> M_MAP = new HashMap<Integer, MotionBound>();
+		M_ARR = new ArrayList<>();
+		for (int y = 1; y < cellMotion.length - 1; y++) {
+			for (int x = 1; x < cellMotion[y].length - 1; x++) {
+				if (cellMotion[y][x] != 1) {
+					continue;
+				}
+				if (Pixel.isMatch(cellNewSumm[y][x], 0, 255, 255, 255)) {
+					continue;
+				}
+				MotionBound l = M_MAP.get(key(x - 1, y - 0)); // kiri
+				MotionBound t = M_MAP.get(key(x - 0, y - 1)); // atas
+				MotionBound q = M_MAP.get(key(x - 1, y - 1)); // atas kiri
+				MotionBound p = M_MAP.get(key(x + 1, y - 1)); // atas kanan
+				if (l == null && t == null && q == null && p == null) {
+					MotionBound n = new MotionBound(x, y, x, y, now);
+					M_MAP.put(key(x, y), n);
+					M_ARR.add(n);
+					continue;
+				}
+				if (l != null && q != null) {
+					merge(x, y, l, q, true,  M_MAP);
+					continue;
+				}
+				if (l != null && t != null) {
+					merge(x, y, l, t, true,  M_MAP);
+					continue;
+				}
+				if (l != null && p != null) {
+					merge(x, y, l, p, false, M_MAP);
+					continue;
+				}
+				if (l != null) {
+					l._ecx = x > l._ecx ? x : l._ecx;
+					M_MAP.put(key(x, y), l);
+					continue;
+				}
+				if (p != null) {
+					p._bcx = x < p._bcx ? x : p._bcx; p._ecy = y;
+					M_MAP.put(key(x, y), p);
+					continue;
+				}
+				if (t != null) {
+					t._ecy = y;
+					M_MAP.put(key(x, y), t);
+					continue;
+				}
+				if (q != null) {
+					q._ecx = x > q._ecx ? x : q._ecx; q._ecy = y;
+					M_MAP.put(key(x, y), q);
+					continue;
+				}
+			}
+		}
+	}
+	private MotionBound[][] M_MAT = new MotionBound[_h / Cell.SIZE][_w / Cell.SIZE];
+	private void expandMotionBounds(int threshold) {
+		int l = threshold;
+		int r = cellMotion[0].length - 1 - threshold;
+		int t = threshold;
+		int b = cellMotion   .length - 1 - threshold;
+		for (int a = 0; a < M_ARR.size(); a++) {
+			MotionBound mb = M_ARR.get(a);
+			mb._bcx = mb._bcx > l ? mb._bcx - threshold : mb._bcx;
+			mb._ecx = mb._ecx < r ? mb._ecx + threshold : mb._ecx;
+			mb._bcy = mb._bcx > t ? mb._bcy - threshold : mb._bcy;
+			mb._ecy = mb._ecy < b ? mb._ecy + threshold : mb._ecy;
+		}
+		M_MAT = new MotionBound[_h / Cell.SIZE][_w / Cell.SIZE];
+		for (int a = 0; a < M_ARR.size(); a++) {
+			MotionBound mb = M_ARR.get(a);
+			if (mb.dead) {
+				continue;
+			}
+			boolean colide = true;
+			while (colide) {
+				MotionBound colider = null;
+				for (int y = mb._bcy; y <= mb._ecy; y++) {
+					for (int x = mb._bcx; x <= mb._ecx; x++) {
+						if (M_MAT[y][x] != null) {
+							colider = M_MAT[y][x];
+							break;
+						}
+					}
+				}
+				if (colider != null) {
+					// remove colider;
+					for (int y = colider._bcy; y <= colider._ecy; y++) {
+						for (int x = colider._bcx; x <= colider._ecx; x++) {
+							M_MAT[y][x] = null;
+						}
+					}
+					// merge
+					colider._bcx = colider._bcx < mb._bcx ? colider._bcx : mb._bcx;
+					colider._ecx = colider._ecx > mb._ecx ? colider._ecx : mb._ecx;
+					colider._bcy = colider._bcy < mb._bcy ? colider._bcy : mb._bcy;
+					colider._ecy = colider._ecy > mb._ecy ? colider._ecy : mb._ecy;
+					mb.dead = true;
+					mb = colider;
+				}
+				else {
+					colide = false;
+				}
+			}
+			
+			for (int y = mb._bcy; y <= mb._ecy; y++) {
+				for (int x = mb._bcx; x <= mb._ecx; x++) {
+					M_MAT[y][x] = mb;
+				}
+			}
+		}
+		for (int a = 0; a < M_ARR.size(); a++) {
+			if (M_ARR.get(a).dead) {
+				M_ARR.remove(a--);
+			}
+		}
+	}
+	private void renderMotionBounds() {
+		for (int a = 0; a < M_ARR.size(); a++) {
+			MotionBound mb = M_ARR.get(a);
+			for (int x = mb._bcx; x <= mb._ecx; x++) {
+				int[][] pixels = cellMatrix[mb._bcy][x].pixels;
+				int j = 0;
+				for (int i = 0; i < pixels[j].length; i += 3) {
+					Pixel.setPixel (pixels[j], i, 0, 0, 255);
+				}
+			}
+			for (int x = mb._bcx; x <= mb._ecx; x++) {
+				int[][] pixels = cellMatrix[mb._ecy][x].pixels;
+				int j = pixels.length - 1;
+				for (int i = 0; i < pixels[j].length; i += 3) {
+					Pixel.setPixel (pixels[j], i, 0, 0, 255);
+				}
+			}
+			for (int y = mb._bcy; y <= mb._ecy; y++) {
+				int[][] pixels = cellMatrix[y][mb._bcx].pixels;
+				int i = 0;
+				for (int j = 0; j < pixels.length; j += 1) {
+					Pixel.setPixel (pixels[j], i, 0, 0, 255);
+				}
+			}
+			for (int y = mb._bcy; y <= mb._ecy; y++) {
+				int[][] pixels = cellMatrix[y][mb._ecx].pixels;
+				int i =  pixels[0].length - 3;
+				for (int j = 0; j < pixels.length; j += 1) {
+					Pixel.setPixel (pixels[j], i, 0, 0, 255);
+				}
+			}
+//			for (int y = mb._bcy; y <= mb._ecy; y++) {
+//				for (int x = mb._bcx; x <= mb._ecx; x++) {
+//					if (Pixel.isMatch(cellNewSumm[y][x], 0, 255, 255, 255)) {
+//						continue;
+//					}
+//					int[][] pixels = cellMatrix[y][x].pixels;
+//					for (int j = 0; j < pixels.length; j += 1) {
+//						for (int i = 0; i < pixels[j].length; i += 3) {
+//							int r = pixels[j][i + 0] / 20 * 20;
+//							int g = pixels[j][i + 1] / 20 * 20;
+//							int b = pixels[j][i + 2] / 20 * 20;
+//							Pixel.setPixel(pixels[j], i, r, g, b);
+//						}
+//					}
+//				}
+//			}
+		}
+	}
+	private int key(int x, int y) {
+		return ((x + 1000) * 1000) + (y + 1000);
+	}
 	/*
 	 * 
 	 * 
@@ -557,7 +764,9 @@ public class ItemScanner extends Scanner {
 		    		break P;
 		    	}
 	    	}
-	    	System.out.println(oldMode + " : " + newMode + " : " + charMode + "  ---  mv:" + charMove + "  is:" + idleNumSignal + "  fe:" + detectionForce + "  it:" + (idleUpdateTime == 0 ? 0 : now - idleUpdateTime)  + "ms  at:" + (attackUpdateTime == 0 ? 0 : now - attackUpdateTime) + "ms");
+	    	if (isDebug()) {
+	    		System.out.println(oldMode + " : " + newMode + " : " + charMode + "  ---  mv:" + charMove + "  is:" + idleNumSignal + "  fe:" + detectionForce + "  it:" + (idleUpdateTime == 0 ? 0 : now - idleUpdateTime)  + "ms  at:" + (attackUpdateTime == 0 ? 0 : now - attackUpdateTime) + "ms");
+	    	}
     	} catch (Exception e) {
     		e.printStackTrace();
     	}

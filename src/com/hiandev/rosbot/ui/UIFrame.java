@@ -14,7 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import com.hiandev.rosbot.scanner.battle.ItemScanner;
+import com.hiandev.rosbot.scanner.battle.BattleScanner;
 
 public class UIFrame {
 	
@@ -66,7 +66,7 @@ public class UIFrame {
             setLayout(null);
             Label lblInfo = new Label();
             lblInfo.setText("Hello!");
-            lblInfo.setBounds(0, 0, 800, 20);
+            lblInfo.setBounds(0, 0, _w, 20);
             lblInfo.setBackground(Color.red);
             add(lblInfo);
         }
@@ -76,7 +76,7 @@ public class UIFrame {
         }
         @Override
         public Dimension getPreferredSize() {
-            return new Dimension(_w, 100);
+            return new Dimension(_w, _h);
         }
     }
     

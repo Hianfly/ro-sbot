@@ -6,12 +6,22 @@ import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-public class ScannerFrame {
+public class PreviewFrame {
+	
+	public PreviewFrame() {
+		
+	}
+	
+	public PreviewFrame(int xOffset, int yOffset) {
+		this.xOffset = xOffset;
+		this.yOffset = yOffset;
+	}
 	
 	private Scanner scanner;
     public void setScanner(Scanner scanner) {
@@ -19,7 +29,9 @@ public class ScannerFrame {
     }
     
     private JFrame frame = null;
-    public final ScannerFrame show() {
+	private int xOffset = 0;
+	private int yOffset = 0;
+    public final PreviewFrame show() {
     	if (frame != null) {
     		return this;
     	}
@@ -31,14 +43,14 @@ public class ScannerFrame {
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
                     ex.printStackTrace();
                 }
-                frame = new JFrame("ScannerFrame");
+                frame = new JFrame("PreviewFrame");
                 frame.setUndecorated(true);
                 frame.setBackground(new Color(0, 0, 0, 0));
 //              frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                frame.add(framPanel = new FramePanel());
-                frame.setAlwaysOnTop(true);
+                frame.add(framePanel = new FramePanel());
+                frame.setAlwaysOnTop(false);
                 frame.pack();
-                frame.setLocation(scanner._x, scanner._y);
+                frame.setLocation(scanner._x + scanner._w + xOffset, scanner._y + yOffset);
                 frame.setVisible(true);
                 ready = true;
             }
@@ -55,7 +67,7 @@ public class ScannerFrame {
      * 
      * 
      */
-    private FramePanel framPanel;
+    private FramePanel framePanel;
     class FramePanel extends JPanel {
         public FramePanel() {
             setOpaque(false);
@@ -69,20 +81,47 @@ public class ScannerFrame {
         public Dimension getPreferredSize() {
             return new Dimension(scanner._w, scanner._h);
         }
+    }
+    
+    
+    /*
+     * 
+     * 
+     * 
+     */
+    private PreviewPanel prevwPanel = null;
+    class PreviewPanel extends JPanel {
+    	private BufferedImage image = null;
+        public PreviewPanel(BufferedImage image) {
+            setOpaque(false);
+            setLayout(null);
+        	this.image = image;
+        }
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            super.paintComponent(g);
             Graphics2D g2d = (Graphics2D) g.create();
-            g2d.setBackground(getBackground());
-            g2d.setColor(Color.RED);
-            int x = 0;
-           	int y = 0;
-           	int w = getWidth()  - 1;
-           	int h = getHeight() - 1;
-           	g2d.drawRect(x, y, w, h);
+           	g2d.drawImage(image, 0, 0, null);
             g2d.dispose();
         }
+    }
+    public final void updatePreview(BufferedImage image) {
+    	if (framePanel == null) {
+    		return;
+    	}
+    	if (prevwPanel != null) {
+    		framePanel.remove(prevwPanel);
+    		framePanel.repaint();
+    	}
+    	framePanel.add(prevwPanel = new PreviewPanel(image));
+    	prevwPanel.setBounds(0, 0, scanner._w, scanner._h);
+    }
+    public final void clearPreview(int wait) {
+    	if (framePanel == null || prevwPanel == null) {
+    		return;
+    	}
+   		framePanel.remove(prevwPanel);
+   		framePanel.repaint();
     }
     
 }

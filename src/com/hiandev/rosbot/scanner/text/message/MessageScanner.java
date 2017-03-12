@@ -16,9 +16,7 @@ public class MessageScanner extends TextScanner {
 	@Override
 	public void onTextChanged(String[] rowTexts) {
 		super.onTextChanged(rowTexts);
-		for (String t : rowTexts) {
-			System.out.println(t);
-		}
+		System.out.println(rowTexts[rowTexts.length - 1]);
 	}
 	
 }

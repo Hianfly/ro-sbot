@@ -29,14 +29,17 @@ public abstract class Scanner extends Service {
 		if (frame != null) {
 	    	frame.show();
 		}
+		if (prevFrame != null) {
+			prevFrame.show();
+		}
     	return start;
     }
     
     @Override
     protected void onPostExecute() {
     	super.onPostExecute();
-    	if (frame != null && debug) {
-    	    frame.updatePreview(toBufferedImage());
+    	if (prevFrame != null) {
+    		prevFrame.updatePreview(toBufferedImage());
     	}
     }
     
@@ -132,6 +135,14 @@ public abstract class Scanner extends Service {
 	}
 	public ScannerFrame getScannerFrame() {
 		return frame;
+	}
+	private PreviewFrame prevFrame;
+	public void setPreviewFrame(PreviewFrame prevFrame) {
+		this.prevFrame = prevFrame;
+		this.prevFrame.setScanner(this);
+	}
+	public PreviewFrame getPreviewFrame() {
+		return prevFrame;
 	}
 	
 	/*

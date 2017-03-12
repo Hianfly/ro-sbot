@@ -67,7 +67,7 @@ public class MouseHelper {
 		return m;
 	}
 
-	public static final int[] capturePixels(ItemScanner scanner, boolean newRaster, int floorThreshold) {
+	public static final int[] capturePixels(BattleScanner scanner, boolean newRaster, int floorThreshold) {
 	  	Point point = MouseInfo.getPointerInfo().getLocation();
 	  	int x = (int) point.getX() - scanner._x;
 	  	int y = (int) point.getY() - scanner._y;
