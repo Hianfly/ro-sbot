@@ -12,6 +12,7 @@ import com.hiandev.rosbot.scanner.PreviewFrame;
 import com.hiandev.rosbot.scanner.ScannerFrame;
 import com.hiandev.rosbot.scanner.battle.Cell;
 import com.hiandev.rosbot.scanner.battle.MotionObject;
+import com.hiandev.rosbot.scanner.battle.BattleConfig;
 import com.hiandev.rosbot.scanner.battle.BattleScanner;
 import com.hiandev.rosbot.scanner.text.info.InfoScanner;
 import com.hiandev.rosbot.scanner.text.message.MessageScanner;
@@ -128,7 +129,6 @@ public class Main {
 			super (_x, _y);
 		}
 		
-		long teleportIdleInterval    = 1000 * 2; 
 		long teleportDefaultInterval = 1000 * 60 * 2;
 		long teleportLastTime        = 0;
 		@Override
@@ -148,41 +148,28 @@ public class Main {
 //				return 0;
 //			}
 			
-			if (teleportDefaultInterval > 0 && duration > teleportDefaultInterval) {
-		  		teleport();
-		  		return forceRetry;
-		  	}
+			boolean doit = doWhenStayAtSameLocationReachedItsLimit(now, duration);
+			if (doit) {
+				return forceRetry;
+			}
 
-		  	if (duration == 0 && prevMode == BattleScanner.MODE_ATTACK) {
-		  		int _x = getMiddleCellX();
-		  		int _y = getMiddleCellY();
-		  		int _f = 1;
-		  		while (_f == 1) {
-			  		L : for (int x = _x - 12; x <= _x + 12; x += 8) {
-				  		for (int y = _y + 16; y >= _y -  8; y -= 8) { 
-					  		switch (hoverCell(x, y)) {
-					  		case BattleScanner.MODE_TARGET: _f = 2; attack(); break L;
-							case BattleScanner.MODE_PICK  : _f = 1; pick()  ; break L;
-						  	default: break;
-					  		}
-				  		}
-				  		_f = 0;
-			  		}
-		  		}
-		  		if (_f == 2) {
-		  			return forceRetry = 0;
-		  		}
+			if (isAttackDone(duration, prevMode)) {
+				switch (BattleConfig.WHEN_ATTACKING_DONE_THEN) {
+				case 1: 
+		  			int hs = doHardScanSurroundingForItems();
+		  			if (hs == BattleScanner.MODE_TARGET) {
+		  				return forceRetry;
+		  			}
+		  			break;
+				}
 		  	}
-		  	
 
 			ArrayList<MotionObject> moList = bttlScanner.getMotionObjetList(0);
 			if (moList.size() > 0) {
 				Collections.sort(moList, new BattleScanner.MotionObjectDistanceComparator());
-				int index = new Random().nextInt(moList.size() > 1 ? 1: moList.size());
-				MotionObject mo = moList.get(index);
+				MotionObject mo = moList.get(0);
 				switch (hoverCell(mo.getMiddleCellX(), mo.getMiddleCellY())) {
 				case BattleScanner.MODE_TARGET:
-					forceRetry = 0; 
 					attack();
 					break;
 				case BattleScanner.MODE_PICK:
@@ -192,67 +179,97 @@ public class Main {
 				default:
 					forceRetry = 1;
 					cancel();
-					if (teleportIdleInterval > 0 && duration > teleportIdleInterval) {
-						teleportLastTime = now;
-						System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< " + duration);
-						teleport();
-						sleep(50);
-					}
+					doWhenIdleReachedItsLimit(now, duration);
 					break;
 				}
 			}
 			else {
 				cancel();
-				if (teleportIdleInterval > 0 && duration > teleportIdleInterval) {
+				doWhenIdleReachedItsLimit(now, duration);
+			}
+			return forceRetry;
+		}
+		
+		private boolean isAttackDone(long duration, int prevMode) {
+			return duration == 0 && prevMode == BattleScanner.MODE_ATTACK;
+		}
+			
+		private int doHardScanSurroundingForItems() {
+			int _m = -1;
+			int _x = getMiddleCellX();
+	  		int _y = getMiddleCellY();
+	  		boolean scan = true;
+	  		while  (scan) {
+		  		L : for (int x = _x - 12; x <= _x + 12; x += 8) {
+			  		for (int y = _y + 16; y >= _y -  8; y -= 8) { 
+				  		_m = hoverCell(x, y);
+				  		switch (_m) {
+				  		case BattleScanner.MODE_TARGET: 
+				  			attack(); 
+				  			break L;
+						case BattleScanner.MODE_PICK: 
+							pick(); 
+							break L;
+				  		}
+			  		}
+		  		}
+	  			if (_m == BattleScanner.MODE_TARGET) {
+	  				scan = false;
+	  			}
+	  		}
+	  		return _m;
+		}
+		
+		private boolean doWhenIdleReachedItsLimit(long now, long duration) {
+			boolean doit = BattleConfig.IDLE_LIMIT > 0 && duration > BattleConfig.IDLE_LIMIT;
+			if (doit) {
+				switch (BattleConfig.WHEN_IDLE_REACHED_ITS_LIMIT_THEN) {
+				case 1:
 					teleportLastTime = now;
-					System.out.println("<<<<<<<adasdasdasdasdasdas x<<<<<<<<<< " + duration);
-					teleport();
-					sleep(50);
-//					sleep(1000);
+					teleport(100);
+					break;
 				}
 			}
-		  	
-		  	
-		  	
-//			ArrayList<Cell> cellList = bttlScanner.getNonWhiteCells(30);
-//		  	ArrayList<Cell> itemList = bttlScanner.findItemCells(cellList, 5);
-//		  	ArrayList<Cell> motiList = bttlScanner.getMotionCells();
-//		  	ArrayList<Cell> scanList = new ArrayList<>();
-//		  	scanList.addAll(itemList);
-//		  	scanList.addAll(motiList);
-//			if (scanList.size() > 0) {
-//				Collections.sort(scanList, new BattleScanner.CellDistanceComparator());
-//				int index = new Random().nextInt(scanList.size() > 10 ? 10: scanList.size());
-//				Cell cell = scanList.get(index);
-//				switch (hoverCell(cell)) {
-//				case BattleScanner.MODE_TARGET:
-//					forceRetry = 0; 
-//					attack();
-//					break;
-//				case BattleScanner.MODE_PICK:
-//					forceRetry = 1; 
-//					pick();
-//					break;
-//				default:
-//					forceRetry = 1;
-//					cancel();
-//					if (teleportIdleInterval > 0 && duration > teleportIdleInterval) {
-//						teleport();
-////						sleep(1000);
-//					}
-//					break;
-//				}
-//			}
-//			else {
-//				cancel();
-//				if (teleportIdleInterval > 0 && duration > teleportIdleInterval) {
-//					teleport();
-////					sleep(1000);
-//				}
-//			}
-			return forceRetry;
+			return doit;
+		}
+		
+		private boolean doWhenStayAtSameLocationReachedItsLimit(long now, long duration) {
+			boolean doit = BattleConfig.STAY_AT_SAME_LOCATION_LIMIT > 0 && duration > BattleConfig.STAY_AT_SAME_LOCATION_LIMIT;
+			if (doit) {
+				switch (BattleConfig.WHEN_STAY_AT_SAME_LOCATION_REACHED_ITS_LIMIT_THEN) {
+				case 1:
+					teleportLastTime = now;
+			  		teleport();
+					break;
+				}
+			}
+			return doit;
 		}
 		
 	}
 	
 }
+
+
+
+
+//	if (duration == 0 && prevMode == BattleScanner.MODE_ATTACK) {
+//		int _x = getMiddleCellX();
+//		int _y = getMiddleCellY();
+//		int _f = 1;
+//		while (_f == 1) {
+//  		L : for (int x = _x - 12; x <= _x + 12; x += 8) {
+//	  		for (int y = _y + 16; y >= _y -  8; y -= 8) { 
+//		  		switch (hoverCell(x, y)) {
+//		  		case BattleScanner.MODE_TARGET: _f = 2; attack(); break L;
+//				case BattleScanner.MODE_PICK  : _f = 1; pick()  ; break L;
+//			  	default: break;
+//		  		}
+//	  		}
+//	  		_f = 0;
+//  		}
+//		}
+//		if (_f == 2) {
+//			return forceRetry = 0;
+//		}
+//	}

@@ -38,24 +38,22 @@ public class BattleScanner extends Scanner {
 		try {
 			// Step 1
 			createCellMatrix();
-			removeDarkPixels(50); // 50
-			removeBackground(50); // 80
+			removeDarkPixels(BattleConfig.DARK_PIXEL_REMOVAL_THRESHOLD); // 50
+			removeBackground(BattleConfig.BACKGROUND_REMOVAL_THRESHOLD); // 80
 
 			// Step 2
-			createNewCellSummary(20); // 15
-
-			// Step 3
-			createCellMotion(20);
+			createNewCellSummary(BattleConfig.CELL_SUMMARY_THRESHOLD); // 15
+			createCellMotion(BattleConfig.CELL_MOTION_THRESHOLD);
 			removeCellMotionNoise();
 //			renderCellMotion();
 			createOldCellSummary();
 
-			// Step 4
-			createItemProfile();
+			// Step 3
+//			createItemProfile();
 
-			// Step 5
+			// Step 4
 			createMotionObject();
-			expandMotionObject(2);
+			expandMotionObject(BattleConfig.MOTION_OBJECT_PADDING);
 			createCrowdObject();
 			createMotionObjectDistance();
 			renderMotionObject();
@@ -238,9 +236,11 @@ public class BattleScanner extends Scanner {
     		b = 255;
     		d = 1;
     	}
-    	r /= d;
-    	g /= d;
-    	b /= d;
+    	else {
+	    	r /= d;
+	    	g /= d;
+	    	b /= d;
+    	}
     	for (int y = 0; y < cellMatrix.length; y++) {
 			for (int x = 0; x < cellMatrix[y].length; x++) {
 				if (cellNeutral[y][x] == 1) {
@@ -360,7 +360,6 @@ public class BattleScanner extends Scanner {
 				if (cellMotion[y - 1][x - 0] == 1) sum++;
 				if (cellMotion[y - 1][x + 1] == 1) sum++;
 				if (cellMotion[y - 0][x - 1] == 1) sum++;
-//				if (cellMotion[y - 0][x - 0] == 1) sum++;
 				if (cellMotion[y - 0][x + 1] == 1) sum++;
 				if (cellMotion[y + 1][x - 1] == 1) sum++;
 				if (cellMotion[y + 1][x - 0] == 1) sum++;
@@ -486,7 +485,6 @@ public class BattleScanner extends Scanner {
 	 * 
 	 */
 	private ArrayList<MotionObject> MOTION_OBJECT_LIST = null;
-	private int prmCrowdThreshold = 18;
 	private void createMotionObject() {
 		MOTION_OBJECT_LIST = new ArrayList<>();
 		HashMap<Integer, MotionObject> helper = new HashMap<Integer, MotionObject>();
@@ -591,7 +589,7 @@ public class BattleScanner extends Scanner {
 		for (int a = 0; a < MOTION_OBJECT_LIST.size(); a++) {
 			mo = MOTION_OBJECT_LIST.get(a);
 			boolean collide = true;
-			while (collide) {
+			while  (collide) {
 				// find impact
 				MotionObject ex = null;
 				for (int y = mo._cy0; y <= mo._cy1; y++) {
@@ -646,7 +644,7 @@ public class BattleScanner extends Scanner {
 		for (int a = 0; a < MOTION_OBJECT_LIST.size(); a++) {
 			MotionObject mb = MOTION_OBJECT_LIST.get(a);
 			int[] pixel = new int[3];
-			if (mb.getWidth() <= prmCrowdThreshold && mb.getHeight() <= prmCrowdThreshold) {
+			if (mb.getWidth() <= BattleConfig.CREATE_CROWD_THRESHOLD && mb.getHeight() <= BattleConfig.CREATE_CROWD_THRESHOLD) {
 				pixel = new int[] { 0, 0, 255 };
 			}
 			else {
@@ -689,16 +687,20 @@ public class BattleScanner extends Scanner {
 		ArrayList<MotionObject> list = new ArrayList<>();
 		if (crowdFlag == 0) {
 			for (MotionObject mo : MOTION_OBJECT_LIST) {
-				if (mo.getWidth() <= prmCrowdThreshold && mo.getHeight() <= prmCrowdThreshold) {
+				if (mo.getWidth()  < BattleConfig.CREATE_CROWD_THRESHOLD && mo.getHeight()  < BattleConfig.CREATE_CROWD_THRESHOLD) {
 					list.add(mo);
 				}
 			}
 		}
-		if (crowdFlag == 1) {
-			
+		else if (crowdFlag == 1) {
+			for (MotionObject mo : MOTION_OBJECT_LIST) {
+				if (mo.getWidth() >= BattleConfig.CREATE_CROWD_THRESHOLD && mo.getHeight() >= BattleConfig.CREATE_CROWD_THRESHOLD) {
+					list.add(mo);
+				}
+			}
 		}
-		if (crowdFlag == 2) {
-			
+		else {
+			list.addAll(MOTION_OBJECT_LIST);
 		}
 		return list;
 	}
@@ -752,12 +754,9 @@ public class BattleScanner extends Scanner {
 	public static final int MODE_ATTACK = 2;
 	public static final int MODE_PICK   = 3;
 	private int  charMode            = 0;
-	private int  detectionForce      = 0;
+	private int  detectionForceRetry = 0;
 	private long detectionUpdateTime = 0;
-	private long detectionInterval   = 1000; // jangan lebih kecil dr 1 dtk untuk menghindari cellChangedData
 	private long attackUpdateTime    = 0;
-	private long attackTimeout       = 1000 * 20;
-	private long attackInterval      = 5; // 1000z
 	private long attackStartTime     = 0;
 	private int  idleNumSignal       = 0;
 	private long idleUpdateTime      = 0;
@@ -770,20 +769,20 @@ public class BattleScanner extends Scanner {
 	    	/*
 	    	 * Dont modify code below...
 	    	 */
-	    	if (charMode == MODE_ATTACK && newMode == MODE_IDLE && now - attackUpdateTime > attackInterval) {
+	    	if (charMode == MODE_ATTACK && newMode == MODE_IDLE && now - attackUpdateTime > BattleConfig.EVENT_MIN_ATTACK_DURATION) {
     			idleNumSignal = 1;
     		}
-	    	if (now - detectionUpdateTime < detectionInterval && detectionForce == 0) {
+	    	if (now - detectionUpdateTime < BattleConfig.EVENT_DETECTION_INTERVAL && detectionForceRetry == 0) {
 	    		return;
 	    	}
 	    	detectionUpdateTime = now;
-	    	detectionForce = 0;
+	    	detectionForceRetry = 0;
 	    	/*
 	    	 * Modify code here...
 	    	 */
 	    	P : {
 	    		if (newMode == MODE_ATTACK && idleNumSignal == 0) {
-	    			if (now - attackStartTime > attackTimeout) {
+	    			if (now - attackStartTime > BattleConfig.EVENT_MAX_ATTACK_DURATION) {
 	    				idleNumSignal = 1;
 	    			}
 	    			else {
@@ -796,7 +795,7 @@ public class BattleScanner extends Scanner {
 		    		charMode = MODE_IDLE;
 		    		if (charMove != 1) {
 	    				idleUpdateTime = idleUpdateTime == 0  ? now : idleUpdateTime;
-		    			detectionForce = onIdle(now - idleUpdateTime, oldMode);
+		    			detectionForceRetry = onIdle(now - idleUpdateTime, oldMode);
 		    		}
   					break P;
 	    		}
@@ -808,13 +807,13 @@ public class BattleScanner extends Scanner {
 		    		charMode = MODE_IDLE;
 		    		if (charMove != 1) {
 	    				idleUpdateTime = idleUpdateTime == 0  ? now : idleUpdateTime;
-		    			detectionForce = onIdle(now - idleUpdateTime, oldMode);
+		    			detectionForceRetry = onIdle(now - idleUpdateTime, oldMode);
 		    		}
 		    		break P;
 		    	}
 	    	}
 	    	if (isDebug()) {
-	    		System.out.println(oldMode + " : " + newMode + " : " + charMode + "  ---  mv:" + charMove + "  is:" + idleNumSignal + "  fe:" + detectionForce + "  it:" + (idleUpdateTime == 0 ? 0 : now - idleUpdateTime)  + "ms  at:" + (attackUpdateTime == 0 ? 0 : now - attackUpdateTime) + "ms");
+	    		System.out.println(oldMode + " : " + newMode + " : " + charMode + "  ---  mv:" + charMove + "  is:" + idleNumSignal + "  fe:" + detectionForceRetry + "  it:" + (idleUpdateTime == 0 ? 0 : now - idleUpdateTime)  + "ms  at:" + (attackUpdateTime == 0 ? 0 : now - attackUpdateTime) + "ms");
 	    	}
     	} catch (Exception e) {
     		e.printStackTrace();
@@ -846,7 +845,7 @@ public class BattleScanner extends Scanner {
 	 * 
 	 */
 	private int  mouseCellX = 5;
-	private int  mouseCellY = 102;
+	private int  mouseCellY = 101;
     public int hoverCell(Cell cell) {
     	return hoverCell(cell._cx, cell._cy);
     }
@@ -892,12 +891,15 @@ public class BattleScanner extends Scanner {
     	charMode = MODE_IDLE;
     	return r;
     }
-    public int teleport() {
+    public int teleport(long sleep) {
     	int r = 0;
     	idleUpdateTime = 0;
 		keyPush(KeyEvent.VK_Z);
-    	sleep(20);
+    	sleep(sleep);
 		return r;
+    }
+    public int teleport() {
+		return teleport(20);
     }
     public int move(Cell cell) {
     	int r = 0;
