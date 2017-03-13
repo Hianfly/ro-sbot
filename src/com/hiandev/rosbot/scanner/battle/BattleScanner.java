@@ -42,7 +42,7 @@ public class BattleScanner extends Scanner {
 			removeBackground(BattleConfig.BACKGROUND_REMOVAL_THRESHOLD); // 80
 
 			// Step 2
-			createNewCellSummary(BattleConfig.CELL_SUMMARY_THRESHOLD); // 15
+			createNewCellSummary(BattleConfig.AVERAGE_CELL_PIXELS_FLOOR); // 15
 			createCellMotion(BattleConfig.CELL_MOTION_THRESHOLD);
 			removeCellMotionNoise();
 //			renderCellMotion();
@@ -644,7 +644,7 @@ public class BattleScanner extends Scanner {
 		for (int a = 0; a < MOTION_OBJECT_LIST.size(); a++) {
 			MotionObject mb = MOTION_OBJECT_LIST.get(a);
 			int[] pixel = new int[3];
-			if (mb.getWidth() <= BattleConfig.CREATE_CROWD_THRESHOLD && mb.getHeight() <= BattleConfig.CREATE_CROWD_THRESHOLD) {
+			if (mb.getWidth() <= BattleConfig.MIN_CROWD_OBJECT_SIZE && mb.getHeight() <= BattleConfig.MIN_CROWD_OBJECT_SIZE) {
 				pixel = new int[] { 0, 0, 255 };
 			}
 			else {
@@ -687,14 +687,14 @@ public class BattleScanner extends Scanner {
 		ArrayList<MotionObject> list = new ArrayList<>();
 		if (crowdFlag == 0) {
 			for (MotionObject mo : MOTION_OBJECT_LIST) {
-				if (mo.getWidth()  < BattleConfig.CREATE_CROWD_THRESHOLD && mo.getHeight()  < BattleConfig.CREATE_CROWD_THRESHOLD) {
+				if (mo.getWidth()  < BattleConfig.MIN_CROWD_OBJECT_SIZE && mo.getHeight()  < BattleConfig.MIN_CROWD_OBJECT_SIZE) {
 					list.add(mo);
 				}
 			}
 		}
 		else if (crowdFlag == 1) {
 			for (MotionObject mo : MOTION_OBJECT_LIST) {
-				if (mo.getWidth() >= BattleConfig.CREATE_CROWD_THRESHOLD && mo.getHeight() >= BattleConfig.CREATE_CROWD_THRESHOLD) {
+				if (mo.getWidth() >= BattleConfig.MIN_CROWD_OBJECT_SIZE && mo.getHeight() >= BattleConfig.MIN_CROWD_OBJECT_SIZE) {
 					list.add(mo);
 				}
 			}
@@ -769,7 +769,7 @@ public class BattleScanner extends Scanner {
 	    	/*
 	    	 * Dont modify code below...
 	    	 */
-	    	if (charMode == MODE_ATTACK && newMode == MODE_IDLE && now - attackUpdateTime > BattleConfig.EVENT_MIN_ATTACK_DURATION) {
+	    	if (charMode == MODE_ATTACK && newMode == MODE_IDLE && now - attackUpdateTime > BattleConfig.MIN_ATTACK_DURATION) {
     			idleNumSignal = 1;
     		}
 	    	if (now - detectionUpdateTime < BattleConfig.EVENT_DETECTION_INTERVAL && detectionForceRetry == 0) {
@@ -782,7 +782,7 @@ public class BattleScanner extends Scanner {
 	    	 */
 	    	P : {
 	    		if (newMode == MODE_ATTACK && idleNumSignal == 0) {
-	    			if (now - attackStartTime > BattleConfig.EVENT_MAX_ATTACK_DURATION) {
+	    			if (now - attackStartTime > BattleConfig.MAX_ATTACK_DURATION) {
 	    				idleNumSignal = 1;
 	    			}
 	    			else {

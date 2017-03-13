@@ -35,6 +35,8 @@ public class Main {
 	
 	public Main() {
 		try {
+			BattleConfig.load();
+			
 			mssgScanner = new MainMessageScanner(5, 553 + 17);
 			mssgScanner.setScannerFrame(new ScannerFrame());
 //			mssgScanner.setPreviewFrame(new PreviewFrame());
@@ -154,7 +156,7 @@ public class Main {
 			}
 
 			if (isAttackDone(duration, prevMode)) {
-				switch (BattleConfig.WHEN_ATTACKING_DONE_THEN) {
+				switch (BattleConfig.WHEN_ATTACK_DONE_THEN) {
 				case 1: 
 		  			int hs = doHardScanSurroundingForItems();
 		  			if (hs == BattleScanner.MODE_TARGET) {
@@ -213,15 +215,13 @@ public class Main {
 				  		}
 			  		}
 		  		}
-	  			if (_m == BattleScanner.MODE_TARGET) {
-	  				scan = false;
-	  			}
+	  			scan = _m == BattleScanner.MODE_PICK;
 	  		}
 	  		return _m;
 		}
 		
 		private boolean doWhenIdleReachedItsLimit(long now, long duration) {
-			boolean doit = BattleConfig.IDLE_LIMIT > 0 && duration > BattleConfig.IDLE_LIMIT;
+			boolean doit = BattleConfig.MAX_IDLE_DURATION > 0 && duration > BattleConfig.MAX_IDLE_DURATION;
 			if (doit) {
 				switch (BattleConfig.WHEN_IDLE_REACHED_ITS_LIMIT_THEN) {
 				case 1:
@@ -234,7 +234,7 @@ public class Main {
 		}
 		
 		private boolean doWhenStayAtSameLocationReachedItsLimit(long now, long duration) {
-			boolean doit = BattleConfig.STAY_AT_SAME_LOCATION_LIMIT > 0 && duration > BattleConfig.STAY_AT_SAME_LOCATION_LIMIT;
+			boolean doit = BattleConfig.MAX_STAY_AT_SAME_LOCATION_DURATION > 0 && duration > BattleConfig.MAX_STAY_AT_SAME_LOCATION_DURATION;
 			if (doit) {
 				switch (BattleConfig.WHEN_STAY_AT_SAME_LOCATION_REACHED_ITS_LIMIT_THEN) {
 				case 1:
