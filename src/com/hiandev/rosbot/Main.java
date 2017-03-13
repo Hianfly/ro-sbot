@@ -35,7 +35,7 @@ public class Main {
 	
 	public Main() {
 		try {
-			BattleConfig.load();
+			new BattleConfig().load();
 			
 			mssgScanner = new MainMessageScanner(5, 553 + 17);
 			mssgScanner.setScannerFrame(new ScannerFrame());

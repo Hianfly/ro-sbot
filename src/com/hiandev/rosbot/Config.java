@@ -34,7 +34,7 @@ public class Config {
 		return res;
 	}
 	
-	public static final void load() {
+	public final void load() {
 		BufferedReader reader = null;
 		String line = null;
 		try {
