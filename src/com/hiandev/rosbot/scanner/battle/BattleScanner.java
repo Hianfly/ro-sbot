@@ -36,18 +36,30 @@ public class BattleScanner extends Scanner {
 	public void onExecute() {
 		super.onExecute();
 		try {
+			// Step 1
 			createCellMatrix();
 			removeDarkPixels(50); // 50
-			removeBackground(80); // 80
-			createNewCellSummary(15); // 15
-			createCellMotion(0);
+			removeBackground(50); // 80
+
+			// Step 2
+			createNewCellSummary(20); // 15
+
+			// Step 3
+			createCellMotion(20);
 			removeCellMotionNoise();
-			renderCellMotion();
+//			renderCellMotion();
 			createOldCellSummary();
+
+			// Step 4
 			createItemProfile();
-			createMotionBounds();
-			expandMotionBounds(2);
-			renderMotionBounds();
+
+			// Step 5
+			createMotionObject();
+			expandMotionObject(2);
+			createCrowdObject();
+			createMotionObjectDistance();
+			renderMotionObject();
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -94,6 +106,12 @@ public class BattleScanner extends Scanner {
      */
     private int[][] cellNeutral = null;   
     private void createNeutralCell() {
+//    	// Left
+//    	for (int x = 0; x < 120; x++) {
+//    		for (int y = 0; y < 15; y++) {
+//    	    	cellNeutral[x][y] = 1;
+//    		}
+//    	}
     	// Battle Msg
     	for (int x = 100; x < 120; x++) {
     		for (int y = 0; y < 160; y++) {
@@ -467,35 +485,16 @@ public class BattleScanner extends Scanner {
 	 * 
 	 * 
 	 */
-	private void merge(int x, int y, MotionBound l, MotionBound t, boolean left, HashMap<Integer, MotionBound> map) {
-		if (l.equals(t)) {
-			if (left) {
-				l._ecx = x > l._ecx ? x : l._ecx;
-			}
-			else {
-				l._bcx = x < l._bcx ? x : l._bcx;
-			}
-			map.put(key(x, y), l);
-		}
-		else {
-			t._bcx = t._bcx < l._bcx ? t._bcx : l._bcx;
-			t._bcy = t._bcy < l._bcy ? t._bcy : l._bcy;
-			t._ecx = t._ecx > l._ecx ? t._ecx : l._ecx;
-			t._ecy = t._ecy > l._ecy ? t._ecy : l._ecy;
-			for (int j = l._bcy; j <= l._ecy; j++) {
-				for (int i = l._bcx; i <= l._ecx; i++) {
-					map.put(key(i, j), t);
-				}
-			}
-			M_ARR.remove(l);
-			map.put(key(x, y), t);
-		}
-	}
-	private ArrayList<MotionBound> M_ARR = new ArrayList<>();
-	private void createMotionBounds() {
-		long now = System.currentTimeMillis();
-		HashMap<Integer, MotionBound> M_MAP = new HashMap<Integer, MotionBound>();
-		M_ARR = new ArrayList<>();
+	private ArrayList<MotionObject> MOTION_OBJECT_LIST = null;
+	private int prmCrowdThreshold = 18;
+	private void createMotionObject() {
+		MOTION_OBJECT_LIST = new ArrayList<>();
+		HashMap<Integer, MotionObject> helper = new HashMap<Integer, MotionObject>();
+		MotionObject ll = null;
+		MotionObject tt = null;
+		MotionObject lt = null;
+		MotionObject rt = null;
+		MotionObject mo = null;
 		for (int y = 1; y < cellMotion.length - 1; y++) {
 			for (int x = 1; x < cellMotion[y].length - 1; x++) {
 				if (cellMotion[y][x] != 1) {
@@ -504,165 +503,207 @@ public class BattleScanner extends Scanner {
 				if (Pixel.isMatch(cellNewSumm[y][x], 0, 255, 255, 255)) {
 					continue;
 				}
-				MotionBound l = M_MAP.get(key(x - 1, y - 0)); // kiri
-				MotionBound t = M_MAP.get(key(x - 0, y - 1)); // atas
-				MotionBound q = M_MAP.get(key(x - 1, y - 1)); // atas kiri
-				MotionBound p = M_MAP.get(key(x + 1, y - 1)); // atas kanan
-				if (l == null && t == null && q == null && p == null) {
-					MotionBound n = new MotionBound(x, y, x, y, now);
-					M_MAP.put(key(x, y), n);
-					M_ARR.add(n);
+				ll = helper.get(createHelperKey(x - 1, y - 0)); //  left left
+				tt = helper.get(createHelperKey(x - 0, y - 1)); //   top top
+				lt = helper.get(createHelperKey(x - 1, y - 1)); //  left top
+				rt = helper.get(createHelperKey(x + 1, y - 1)); // right top
+				if (ll == null && tt == null && lt == null && rt == null) {
+					mo = new MotionObject(x, y, x, y);
+					helper.put(createHelperKey(x, y), mo);
+					MOTION_OBJECT_LIST.add(mo);
 					continue;
 				}
-				if (l != null && q != null) {
-					merge(x, y, l, q, true,  M_MAP);
+				if (ll != null && lt != null) {
+					mergeMotionObject(x, y, ll, lt, true,  helper);
 					continue;
 				}
-				if (l != null && t != null) {
-					merge(x, y, l, t, true,  M_MAP);
+				if (ll != null && tt != null) {
+					mergeMotionObject(x, y, ll, tt, true,  helper);
 					continue;
 				}
-				if (l != null && p != null) {
-					merge(x, y, l, p, false, M_MAP);
+				if (ll != null && rt != null) {
+					mergeMotionObject(x, y, ll, rt, false, helper);
 					continue;
 				}
-				if (l != null) {
-					l._ecx = x > l._ecx ? x : l._ecx;
-					M_MAP.put(key(x, y), l);
+				if (ll != null) {
+					ll._cx1 = x > ll._cx1 ? x : ll._cx1;
+					helper.put(createHelperKey(x, y), ll);
 					continue;
 				}
-				if (p != null) {
-					p._bcx = x < p._bcx ? x : p._bcx; p._ecy = y;
-					M_MAP.put(key(x, y), p);
+				if (rt != null) {
+					rt._cx0 = x < rt._cx0 ? x : rt._cx0; rt._cy1 = y;
+					helper.put(createHelperKey(x, y), rt);
 					continue;
 				}
-				if (t != null) {
-					t._ecy = y;
-					M_MAP.put(key(x, y), t);
+				if (tt != null) {
+					tt._cy1 = y;
+					helper.put(createHelperKey(x, y), tt);
 					continue;
 				}
-				if (q != null) {
-					q._ecx = x > q._ecx ? x : q._ecx; q._ecy = y;
-					M_MAP.put(key(x, y), q);
+				if (lt != null) {
+					lt._cx1 = x > lt._cx1 ? x : lt._cx1; lt._cy1 = y;
+					helper.put(createHelperKey(x, y), lt);
 					continue;
 				}
 			}
 		}
 	}
-	private MotionBound[][] M_MAT = new MotionBound[_h / Cell.SIZE][_w / Cell.SIZE];
-	private void expandMotionBounds(int threshold) {
+	private void mergeMotionObject(int x, int y, MotionObject l, MotionObject t, boolean isLeftSide, HashMap<Integer, MotionObject> helper) {
+		if (l.equals(t)) {
+			if (isLeftSide) {
+				l._cx1 = x > l._cx1 ? x : l._cx1;
+			}
+			else {
+				l._cx0 = x < l._cx0 ? x : l._cx0;
+			}
+			helper.put(createHelperKey(x, y), l);
+		}
+		else {
+			t._cx0 = t._cx0 < l._cx0 ? t._cx0 : l._cx0;
+			t._cy0 = t._cy0 < l._cy0 ? t._cy0 : l._cy0;
+			t._cx1 = t._cx1 > l._cx1 ? t._cx1 : l._cx1;
+			t._cy1 = t._cy1 > l._cy1 ? t._cy1 : l._cy1;
+			for (int j = l._cy0; j <= l._cy1; j++) {
+				for (int i = l._cx0; i <= l._cx1; i++) {
+					helper.put(createHelperKey(i, j), t);
+				}
+			}
+			MOTION_OBJECT_LIST.remove(l);
+			helper.put(createHelperKey(x, y), t);
+		}
+	}
+	private void expandMotionObject(int threshold) {
 		int l = threshold;
 		int r = cellMotion[0].length - 1 - threshold;
 		int t = threshold;
 		int b = cellMotion   .length - 1 - threshold;
-		for (int a = 0; a < M_ARR.size(); a++) {
-			MotionBound mb = M_ARR.get(a);
-			mb._bcx = mb._bcx > l ? mb._bcx - threshold : mb._bcx;
-			mb._ecx = mb._ecx < r ? mb._ecx + threshold : mb._ecx;
-			mb._bcy = mb._bcx > t ? mb._bcy - threshold : mb._bcy;
-			mb._ecy = mb._ecy < b ? mb._ecy + threshold : mb._ecy;
+		for (int a = 0; a < MOTION_OBJECT_LIST.size(); a++) {
+			MotionObject mb = MOTION_OBJECT_LIST.get(a);
+			mb._cx0 = mb._cx0 > l ? mb._cx0 - threshold : mb._cx0;
+			mb._cx1 = mb._cx1 < r ? mb._cx1 + threshold : mb._cx1;
+			mb._cy0 = mb._cx0 > t ? mb._cy0 - threshold : mb._cy0;
+			mb._cy1 = mb._cy1 < b ? mb._cy1 + threshold : mb._cy1;
 		}
-		M_MAT = new MotionBound[_h / Cell.SIZE][_w / Cell.SIZE];
-		for (int a = 0; a < M_ARR.size(); a++) {
-			MotionBound mb = M_ARR.get(a);
-			if (mb.dead) {
-				continue;
-			}
-			boolean colide = true;
-			while (colide) {
-				MotionBound colider = null;
-				for (int y = mb._bcy; y <= mb._ecy; y++) {
-					for (int x = mb._bcx; x <= mb._ecx; x++) {
-						if (M_MAT[y][x] != null) {
-							colider = M_MAT[y][x];
+	}
+	private void createCrowdObject() {
+		MotionObject[][] helper = new MotionObject[_h / Cell.SIZE][_w / Cell.SIZE];
+		MotionObject mo = null;
+		for (int a = 0; a < MOTION_OBJECT_LIST.size(); a++) {
+			mo = MOTION_OBJECT_LIST.get(a);
+			boolean collide = true;
+			while (collide) {
+				// find impact
+				MotionObject ex = null;
+				for (int y = mo._cy0; y <= mo._cy1; y++) {
+					for (int x = mo._cx0; x <= mo._cx1; x++) {
+						if (helper[y][x] != null) {
+							ex = helper[y][x];
 							break;
 						}
 					}
 				}
-				if (colider != null) {
-					// remove colider;
-					for (int y = colider._bcy; y <= colider._ecy; y++) {
-						for (int x = colider._bcx; x <= colider._ecx; x++) {
-							M_MAT[y][x] = null;
+				// clear impact, merge and loop until no impact found
+				if (ex != null) {
+					for (int y = ex._cy0; y <= ex._cy1; y++) {
+						for (int x = ex._cx0; x <= ex._cx1; x++) {
+							helper[y][x] = null;
 						}
 					}
-					// merge
-					colider._bcx = colider._bcx < mb._bcx ? colider._bcx : mb._bcx;
-					colider._ecx = colider._ecx > mb._ecx ? colider._ecx : mb._ecx;
-					colider._bcy = colider._bcy < mb._bcy ? colider._bcy : mb._bcy;
-					colider._ecy = colider._ecy > mb._ecy ? colider._ecy : mb._ecy;
-					mb.dead = true;
-					mb = colider;
+					ex._cx0 = ex._cx0 < mo._cx0 ? ex._cx0 : mo._cx0;
+					ex._cx1 = ex._cx1 > mo._cx1 ? ex._cx1 : mo._cx1;
+					ex._cy0 = ex._cy0 < mo._cy0 ? ex._cy0 : mo._cy0;
+					ex._cy1 = ex._cy1 > mo._cy1 ? ex._cy1 : mo._cy1;
+					ex.increaseCrowdCounter();
+					mo.setDead();
+					mo = ex;
 				}
 				else {
-					colide = false;
+					collide = false;
 				}
 			}
-			
-			for (int y = mb._bcy; y <= mb._ecy; y++) {
-				for (int x = mb._bcx; x <= mb._ecx; x++) {
-					M_MAT[y][x] = mb;
+			// set new motion object
+			for (int y = mo._cy0; y <= mo._cy1; y++) {
+				for (int x = mo._cx0; x <= mo._cx1; x++) {
+					helper[y][x] = mo;
 				}
 			}
 		}
-		for (int a = 0; a < M_ARR.size(); a++) {
-			if (M_ARR.get(a).dead) {
-				M_ARR.remove(a--);
+		// cleanup
+		for (int a = 0; a < MOTION_OBJECT_LIST.size(); a++) {
+			if (MOTION_OBJECT_LIST.get(a).isDead()) {
+				MOTION_OBJECT_LIST.remove(a--);
 			}
 		}
 	}
-	private void renderMotionBounds() {
-		for (int a = 0; a < M_ARR.size(); a++) {
-			MotionBound mb = M_ARR.get(a);
-			for (int x = mb._bcx; x <= mb._ecx; x++) {
-				int[][] pixels = cellMatrix[mb._bcy][x].pixels;
+	private void createMotionObjectDistance() {
+		MotionObject mo = null;
+		for (int a = 0; a < MOTION_OBJECT_LIST.size(); a++) {
+			mo = MOTION_OBJECT_LIST.get(a);
+			mo.distance = getCellDistance(mo.getMiddleCellX(), mo.getMiddleCellY());
+		}
+	}
+	private void renderMotionObject() {
+		for (int a = 0; a < MOTION_OBJECT_LIST.size(); a++) {
+			MotionObject mb = MOTION_OBJECT_LIST.get(a);
+			int[] pixel = new int[3];
+			if (mb.getWidth() <= prmCrowdThreshold && mb.getHeight() <= prmCrowdThreshold) {
+				pixel = new int[] { 0, 0, 255 };
+			}
+			else {
+				pixel = new int[] { 255, 0, 0 };
+			}
+			for (int x = mb._cx0; x <= mb._cx1; x++) {
+				int[][] pixels = cellMatrix[mb._cy0][x].pixels;
 				int j = 0;
 				for (int i = 0; i < pixels[j].length; i += 3) {
-					Pixel.setPixel (pixels[j], i, 0, 0, 255);
+					Pixel.setPixel (pixels[j], i, pixel);
 				}
 			}
-			for (int x = mb._bcx; x <= mb._ecx; x++) {
-				int[][] pixels = cellMatrix[mb._ecy][x].pixels;
+			for (int x = mb._cx0; x <= mb._cx1; x++) {
+				int[][] pixels = cellMatrix[mb._cy1][x].pixels;
 				int j = pixels.length - 1;
 				for (int i = 0; i < pixels[j].length; i += 3) {
-					Pixel.setPixel (pixels[j], i, 0, 0, 255);
+					Pixel.setPixel (pixels[j], i, pixel);
 				}
 			}
-			for (int y = mb._bcy; y <= mb._ecy; y++) {
-				int[][] pixels = cellMatrix[y][mb._bcx].pixels;
+			for (int y = mb._cy0; y <= mb._cy1; y++) {
+				int[][] pixels = cellMatrix[y][mb._cx0].pixels;
 				int i = 0;
 				for (int j = 0; j < pixels.length; j += 1) {
-					Pixel.setPixel (pixels[j], i, 0, 0, 255);
+					Pixel.setPixel (pixels[j], i, pixel);
 				}
 			}
-			for (int y = mb._bcy; y <= mb._ecy; y++) {
-				int[][] pixels = cellMatrix[y][mb._ecx].pixels;
+			for (int y = mb._cy0; y <= mb._cy1; y++) {
+				int[][] pixels = cellMatrix[y][mb._cx1].pixels;
 				int i =  pixels[0].length - 3;
 				for (int j = 0; j < pixels.length; j += 1) {
-					Pixel.setPixel (pixels[j], i, 0, 0, 255);
+					Pixel.setPixel (pixels[j], i, pixel);
 				}
 			}
-//			for (int y = mb._bcy; y <= mb._ecy; y++) {
-//				for (int x = mb._bcx; x <= mb._ecx; x++) {
-//					if (Pixel.isMatch(cellNewSumm[y][x], 0, 255, 255, 255)) {
-//						continue;
-//					}
-//					int[][] pixels = cellMatrix[y][x].pixels;
-//					for (int j = 0; j < pixels.length; j += 1) {
-//						for (int i = 0; i < pixels[j].length; i += 3) {
-//							int r = pixels[j][i + 0] / 20 * 20;
-//							int g = pixels[j][i + 1] / 20 * 20;
-//							int b = pixels[j][i + 2] / 20 * 20;
-//							Pixel.setPixel(pixels[j], i, r, g, b);
-//						}
-//					}
-//				}
-//			}
 		}
 	}
-	private int key(int x, int y) {
+	private int createHelperKey(int x, int y) {
 		return ((x + 1000) * 1000) + (y + 1000);
 	}
+	public  ArrayList<MotionObject> getMotionObjetList(int crowdFlag) {
+		ArrayList<MotionObject> list = new ArrayList<>();
+		if (crowdFlag == 0) {
+			for (MotionObject mo : MOTION_OBJECT_LIST) {
+				if (mo.getWidth() <= prmCrowdThreshold && mo.getHeight() <= prmCrowdThreshold) {
+					list.add(mo);
+				}
+			}
+		}
+		if (crowdFlag == 1) {
+			
+		}
+		if (crowdFlag == 2) {
+			
+		}
+		return list;
+	}
+	
+	
 	/*
 	 * 
 	 * 
@@ -671,6 +712,14 @@ public class BattleScanner extends Scanner {
     public static class CellDistanceComparator implements Comparator<Cell> {
     	@Override
 		public int compare(Cell arg0, Cell arg1) {
+			return arg0.distance.compareTo(arg1.distance);
+		}
+    }
+    public static class MotionObjectDistanceComparator implements Comparator<MotionObject> {
+    
+    	
+    	@Override
+		public int compare(MotionObject arg0, MotionObject arg1) {
 			return arg0.distance.compareTo(arg1.distance);
 		}
     }
@@ -705,10 +754,10 @@ public class BattleScanner extends Scanner {
 	private int  charMode            = 0;
 	private int  detectionForce      = 0;
 	private long detectionUpdateTime = 0;
-	private long detectionInterval   = 500; // jangan lebih kecil dr 1 dtk untuk menghindari cellChangedData
+	private long detectionInterval   = 1000; // jangan lebih kecil dr 1 dtk untuk menghindari cellChangedData
 	private long attackUpdateTime    = 0;
 	private long attackTimeout       = 1000 * 20;
-	private long attackInterval      = 350; // 1000
+	private long attackInterval      = 5; // 1000z
 	private long attackStartTime     = 0;
 	private int  idleNumSignal       = 0;
 	private long idleUpdateTime      = 0;

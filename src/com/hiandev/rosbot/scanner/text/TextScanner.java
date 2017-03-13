@@ -42,7 +42,7 @@ public class TextScanner extends Scanner {
     protected void onPostExecute() {
     	super.onPostExecute();
     	try {
-    		computeTextChanged();
+			computeTextChanged();
 	    	if (!dump) {
 	    		 dump = true;
 	    		 dumpAssets();
@@ -280,9 +280,6 @@ public class TextScanner extends Scanner {
 	    		}
 	    		else {
 	    			kv = st.split(":");
-	    			if (kv.length < 2) {
-	    				System.out.println(file.getAbsolutePath());
-	    			}
 	    		}
 	    		ASSET_MAP.put(kv[1].trim(), kv[0].trim());
 	    	} catch (Exception e) {
