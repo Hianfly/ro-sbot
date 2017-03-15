@@ -2,5 +2,5 @@
 #
 #
 
-auto_logon_enabled = 0
-password = 111111
+auto_logon_enabled = 1
+password = f006efc56
