@@ -1,11 +1,13 @@
 package com.hiandev.rosbot;
 
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-
 import org.json.JSONObject;
+import java.awt.Toolkit;
 
 public class Util {
 	
@@ -40,6 +42,10 @@ public class Util {
     		}
     	}
     	return json;
+	}
+	
+	public static final void copyToClipboard(String characters) {
+	    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(characters), null);
 	}
 	
 }

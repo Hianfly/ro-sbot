@@ -8,7 +8,7 @@
 #
 dark_pixel_removal_threshold = 50
 
-# Menghilangkan background / tanah /environment.
+# Menghilangkan backgrouxnd / tanah /environment.
 # Berfungsi untuk mempermudah deteksi motion / gerakan pada layar.
 # Value: 1 ~ 100
 #

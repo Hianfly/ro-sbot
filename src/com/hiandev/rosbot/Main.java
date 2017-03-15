@@ -14,7 +14,11 @@ import com.hiandev.rosbot.scanner.battle.Cell;
 import com.hiandev.rosbot.scanner.battle.MotionObject;
 import com.hiandev.rosbot.scanner.battle.BattleConfig;
 import com.hiandev.rosbot.scanner.battle.BattleScanner;
+import com.hiandev.rosbot.scanner.text.dialog.DisconnectScanner;
 import com.hiandev.rosbot.scanner.text.info.InfoScanner;
+import com.hiandev.rosbot.scanner.text.login.CharacterSelectScanner;
+import com.hiandev.rosbot.scanner.text.login.ChooseServerScanner;
+import com.hiandev.rosbot.scanner.text.login.LogOnScanner;
 import com.hiandev.rosbot.scanner.text.message.MessageScanner;
 import com.hiandev.rosbot.ui.UIFrame;
 
@@ -28,6 +32,11 @@ public class Main {
 		new Main();
 	}
 
+	LogOnScanner           lognScanner = null;
+	ChooseServerScanner    servScanner = null;
+	CharacterSelectScanner charScanner = null;
+	DisconnectScanner      discScanner = null;
+	
 	MainBattleScanner  bttlScanner = null;
 	MainInfoScanner    infoScanner = null;
 	MainMessageScanner mssgScanner = null;
@@ -36,26 +45,58 @@ public class Main {
 	public Main() {
 		try {
 			new BattleConfig().load();
+
+			/*
+			 * 
+			 * 
+			 * 
+			 */
+			
+			lognScanner = new LogOnScanner(271, 406);
+//			lognScanner.setScannerFrame(new ScannerFrame());
+//			lognScanner.setPreviewFrame(new PreviewFrame());
+			lognScanner.setDebug(true);
+			servScanner = new ChooseServerScanner(271, 326);
+//			servScanner.setScannerFrame(new ScannerFrame());
+//			servScanner.setPreviewFrame(new PreviewFrame());
+			servScanner.setDebug(true);
+			charScanner = new CharacterSelectScanner(120, 156);
+//			charScanner.setScannerFrame(new ScannerFrame());
+//			charScanner.setPreviewFrame(new PreviewFrame());
+			charScanner.setDebug(true);
+			discScanner = new DisconnectScanner(271, 288);
+//			discScanner.setScannerFrame(new ScannerFrame());
+//			discScanner.setPreviewFrame(new PreviewFrame());
+			discScanner.setDebug(true);
+			
+			/*
+			 * 
+			 * 
+			 * 
+			 */
 			
 			mssgScanner = new MainMessageScanner(5, 553 + 17);
 			mssgScanner.setScannerFrame(new ScannerFrame());
 //			mssgScanner.setPreviewFrame(new PreviewFrame());
 			mssgScanner.setDebug(true);
-			
 			bttlScanner = new MainBattleScanner(5, 30);
 			bttlScanner.setScannerFrame(new ScannerFrame());
 			bttlScanner.setPreviewFrame(new PreviewFrame(200 + 15 + 15, 0));
 			bttlScanner.setDebug(false);
-			
 			infoScanner = new MainInfoScanner(5, 30);
 			infoScanner.setScannerFrame(new ScannerFrame());
 //			infoScanner.setPreviewFrame(new PreviewFrame());
 			infoScanner.setDebug(true);
-			
 			uiFrame = new UIFrame(bttlScanner._w + 15, 0, 200, bttlScanner._h);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		lognScanner.start();
+		servScanner.start();
+		charScanner.start();
+		discScanner.start();
+		
 		bttlScanner.start();
 		infoScanner.start();
 		mssgScanner.start();
@@ -63,11 +104,9 @@ public class Main {
 	}
 	
 	public class MainMessageScanner extends MessageScanner {
-		
 		public MainMessageScanner(int _x, int _y) throws AWTException {
 			super (_x, _y);
 		}
-		
 	}
 	
 	public class MainInfoScanner extends InfoScanner {
@@ -135,16 +174,19 @@ public class Main {
 		long teleportLastTime        = 0;
 		@Override
 		public int onIdle(long duration, int prevMode) {
+			int forceRetry = 0;
 		  	Point point = MouseInfo.getPointerInfo().getLocation();
 		  	if (((int) point.getX() - _x) > 800 || ((int) point.getY() - _y) > 600) {
-		  		return 0;
+		  		return forceRetry;
+		  	}
+		  	if (GlobalVar.getGameState() != GlobalVar.GAME_STATE_BATTLE) {
+		  		return forceRetry;
 		  	}
 		  	/*
 		  	 * 
 		  	 * 
 		  	 * 
 		  	 */
-			int forceRetry = 0;
 			long now = System.currentTimeMillis();
 //			if (teleportLastTime > 0 && now - teleportLastTime < 500) {
 //				return 0;

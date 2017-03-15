@@ -5,6 +5,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.Raster;
@@ -102,6 +103,15 @@ public abstract class Scanner extends Service {
 		robot.keyPress(keycode);
     	sleep(20);
 		robot.keyRelease(keycode);
+	}
+	public void keyPaste() {
+	    robot.keyPress  (KeyEvent.VK_CONTROL);
+    	sleep(20);
+	    robot.keyPress  (KeyEvent.VK_V);
+    	sleep(20);
+	    robot.keyRelease(KeyEvent.VK_V);
+    	sleep(20);
+	    robot.keyRelease(KeyEvent.VK_CONTROL);
 	}
 	
 	/*

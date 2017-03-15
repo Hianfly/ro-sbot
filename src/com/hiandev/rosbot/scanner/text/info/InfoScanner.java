@@ -1,6 +1,8 @@
 package com.hiandev.rosbot.scanner.text.info;
 
 import java.awt.AWTException;
+
+import com.hiandev.rosbot.GlobalVar;
 import com.hiandev.rosbot.scanner.text.TextScanner;
 
 public class InfoScanner extends TextScanner {
@@ -15,6 +17,12 @@ public class InfoScanner extends TextScanner {
 	public void onTextChanged(String[] rowTexts) {
 		super.onTextChanged(rowTexts);
 		try {
+			if (GlobalVar.getGameState() == GlobalVar.GAME_STATE_CHARACTER_SELECT) {
+				GlobalVar.setGameState(GlobalVar.GAME_STATE_BATTLE);
+			}
+			if (GlobalVar.getGameState() != GlobalVar.GAME_STATE_BATTLE) {
+				return;
+			}
 			lv    = 0;
 			job   = "";
 			jobLv = 0;

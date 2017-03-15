@@ -37,7 +37,7 @@ public class TextScanner extends Scanner {
 			e.printStackTrace();
 		}
 	}
-    private boolean dump = true;
+    private boolean dump = false;
     @Override
     protected void onPostExecute() {
     	super.onPostExecute();
@@ -406,7 +406,19 @@ public class TextScanner extends Scanner {
     	}
     	return sb.toString();
     }
-
+    public String normalize(String source) {
+    	StringBuilder sb = new StringBuilder();
+    	String[] e = source.split(" ");
+    	for (String r : e) {
+    		if (r.isEmpty()) {
+    			continue;
+    		}
+    		sb.append(r).append(" ");
+    	}
+    	if (sb.length() > 0) sb.deleteCharAt(sb.length() - 1);
+    	return sb.toString();
+    }
+    
     /*
      * 
      * 
