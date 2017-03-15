@@ -13,44 +13,88 @@ public class LogOnScanner extends TextScanner {
 		setAssetsDir("./assets/text-login/");
 		setTextPixels(new int[][] { { 0, 0, 0 } });
 		setInterval(5000);
+		setDelay(5000);
 	}
 	
 	@Override
-	public void onTextChanged(String[] rowTexts) {
+	public final void onTextChanged(String[] rowTexts) {
 		super.onTextChanged(rowTexts);
 		try {
-			if (GlobalVar.getGameState() != GlobalVar.GAME_STATE_DISCONNECT) {
-				return;
-			}
-			System.out.println(rowTexts[0]);
+			System.out.println("### " + rowTexts[0]);
 			if (normalize(rowTexts[0]).toLowerCase().startsWith("logon")) {
-				onLogOn();
+				P : {
+					if (doLogon() <= 0) {
+						break P;
+					}
+					if (doServerSelection(271, 326) <= 0) {
+						break P;
+					}
+					if (doCharacterSelection(120, 156) <= 0) {
+						break P;
+					}
+					GlobalVar.setGameState(GlobalVar.GAME_STATE_BATTLE);
+				}
+				resetTextList();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	public void onLogOn() {
-		sleep(5000);
-		String password = "f006efc56";
-		Util.copyToClipboard(password);
+	private int doLogon() {
+		Util.copyToClipboard(LogOnConfig.PASSWORD);
 		keyPaste();
 		sleep(1000);
 		keyPush(KeyEvent.VK_ENTER);
-		GlobalVar.setGameState(GlobalVar.GAME_STATE_LOGON);
+		return 1;
+	}
+	
+	private int doServerSelection(int _x, int _y) {
 		int r = 20;
-		while (r-- > 0) {
-			sleep(1000);
-			if (GlobalVar.getGameState() != GlobalVar.GAME_STATE_LOGON) {
-				break;
+		try {
+			ChooseServerScanner css = null;
+			while (r-- > 0) {
+				css = new ChooseServerScanner(_x, _y);
+				css.startForeground(1);
+				String[] textList = css.getCurrentTextList();
+				System.out.println(">>> " + textList[0]);
+				if (textList.length > 0 && normalize(textList[0]).toLowerCase().startsWith("pilih server")) {
+					keyPush(KeyEvent.VK_ENTER);
+					break;
+				}
 			}
-			System.out.println(r);
+			if (r <= 0) {
+				GlobalVar.setGameState(GlobalVar.GAME_STATE_DISCONNECT);
+				keyPush(KeyEvent.VK_ENTER);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		if (r <= 0) {
-			keyPush(KeyEvent.VK_ENTER);
-			GlobalVar.setGameState(GlobalVar.GAME_STATE_DISCONNECT);
+		return r;
+	}
+	
+	private int doCharacterSelection(int _x, int _y) {
+		int s = 20;
+		try {
+			CharacterSelectScanner ssc = null;
+			while (s-- > 0) {
+				ssc = new CharacterSelectScanner(_x, _y);
+				ssc.startForeground(1);
+				String[] textList = ssc.getCurrentTextList();
+				System.out.println(">>> " + textList[0]);
+				if (textList.length > 0 && normalize(textList[0]).toLowerCase().startsWith("character select")) {
+					keyPush(KeyEvent.VK_ENTER);
+					break;
+				}
+			}
+			if (s <= 0) {
+				keyPush(KeyEvent.VK_ENTER);
+				GlobalVar.setGameState(GlobalVar.GAME_STATE_DISCONNECT);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+		return s;
 	}
 	
 }

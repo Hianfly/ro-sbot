@@ -46,7 +46,7 @@ public abstract class Service {
 	public void stop() {
 		running = false;
 	}
-	protected boolean isStarted() {
+	public boolean isStarted() {
 		return started;
 	}
 	
@@ -75,20 +75,44 @@ public abstract class Service {
 			}
 		});
 	}
-	protected boolean isRunning() {
+	public boolean isRunning() {
 		return running;
 	}
-	protected void setDelay(long delay) {
+	public void setDelay(long delay) {
 		this.delay = delay;
 	}
-	protected long getDelay() {
+	public long getDelay() {
 		return delay;
 	}
-	protected void setInterval(long interval) {
+	public void setInterval(long interval) {
 		this.interval = interval;
 	}
-	protected long getInterval() {
+	public long getInterval() {
 		return interval;
+	}
+	public void startForeground(int executionTimes) {
+		try {
+			running = onStart();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		sleep(delay);
+		if (running && (executionTimes < 0 || executionTimes > 0)) {
+			try {
+				onPreExecute();
+				onExecute();
+				onPostExecute();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		    executionTimes--;
+		    sleep(interval);
+		}
+		try {
+			onFinish();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/*

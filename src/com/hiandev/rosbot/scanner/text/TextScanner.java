@@ -37,7 +37,7 @@ public class TextScanner extends Scanner {
 			e.printStackTrace();
 		}
 	}
-    private boolean dump = false;
+    private boolean dump = true;
     @Override
     protected void onPostExecute() {
     	super.onPostExecute();
@@ -244,7 +244,14 @@ public class TextScanner extends Scanner {
 			sb.append(ASSET_MAP.get(key) == null ? "?" : ASSET_MAP.get(key));
 		}
     }
-
+    public String[] getCurrentTextList() {
+    	return textListNew.toArray(new String[0]);
+    }
+    public void resetTextList() {
+    	textListOld.clear();
+    	textListNew.clear();
+    }
+    
     /*
      * 
      * 

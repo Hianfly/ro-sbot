@@ -6,18 +6,14 @@ import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Random;
-
 import com.hiandev.rosbot.scanner.PreviewFrame;
 import com.hiandev.rosbot.scanner.ScannerFrame;
-import com.hiandev.rosbot.scanner.battle.Cell;
 import com.hiandev.rosbot.scanner.battle.MotionObject;
 import com.hiandev.rosbot.scanner.battle.BattleConfig;
 import com.hiandev.rosbot.scanner.battle.BattleScanner;
 import com.hiandev.rosbot.scanner.text.dialog.DisconnectScanner;
 import com.hiandev.rosbot.scanner.text.info.InfoScanner;
-import com.hiandev.rosbot.scanner.text.login.CharacterSelectScanner;
-import com.hiandev.rosbot.scanner.text.login.ChooseServerScanner;
+import com.hiandev.rosbot.scanner.text.login.LogOnConfig;
 import com.hiandev.rosbot.scanner.text.login.LogOnScanner;
 import com.hiandev.rosbot.scanner.text.message.MessageScanner;
 import com.hiandev.rosbot.ui.UIFrame;
@@ -32,11 +28,8 @@ public class Main {
 		new Main();
 	}
 
-	LogOnScanner           lognScanner = null;
-	ChooseServerScanner    servScanner = null;
-	CharacterSelectScanner charScanner = null;
-	DisconnectScanner      discScanner = null;
-	
+	LogOnScanner       lognScanner = null;
+	DisconnectScanner  discScanner = null;
 	MainBattleScanner  bttlScanner = null;
 	MainInfoScanner    infoScanner = null;
 	MainMessageScanner mssgScanner = null;
@@ -45,39 +38,15 @@ public class Main {
 	public Main() {
 		try {
 			new BattleConfig().load();
+			new  LogOnConfig().load();
 
-			/*
-			 * 
-			 * 
-			 * 
-			 */
-			
 			lognScanner = new LogOnScanner(271, 406);
-//			lognScanner.setScannerFrame(new ScannerFrame());
-//			lognScanner.setPreviewFrame(new PreviewFrame());
 			lognScanner.setDebug(true);
-			servScanner = new ChooseServerScanner(271, 326);
-//			servScanner.setScannerFrame(new ScannerFrame());
-//			servScanner.setPreviewFrame(new PreviewFrame());
-			servScanner.setDebug(true);
-			charScanner = new CharacterSelectScanner(120, 156);
-//			charScanner.setScannerFrame(new ScannerFrame());
-//			charScanner.setPreviewFrame(new PreviewFrame());
-			charScanner.setDebug(true);
 			discScanner = new DisconnectScanner(271, 288);
-//			discScanner.setScannerFrame(new ScannerFrame());
-//			discScanner.setPreviewFrame(new PreviewFrame());
 			discScanner.setDebug(true);
-			
-			/*
-			 * 
-			 * 
-			 * 
-			 */
 			
 			mssgScanner = new MainMessageScanner(5, 553 + 17);
 			mssgScanner.setScannerFrame(new ScannerFrame());
-//			mssgScanner.setPreviewFrame(new PreviewFrame());
 			mssgScanner.setDebug(true);
 			bttlScanner = new MainBattleScanner(5, 30);
 			bttlScanner.setScannerFrame(new ScannerFrame());
@@ -85,7 +54,6 @@ public class Main {
 			bttlScanner.setDebug(false);
 			infoScanner = new MainInfoScanner(5, 30);
 			infoScanner.setScannerFrame(new ScannerFrame());
-//			infoScanner.setPreviewFrame(new PreviewFrame());
 			infoScanner.setDebug(true);
 			uiFrame = new UIFrame(bttlScanner._w + 15, 0, 200, bttlScanner._h);
 		} catch (Exception e) {
@@ -93,10 +61,7 @@ public class Main {
 		}
 		
 		lognScanner.start();
-		servScanner.start();
-		charScanner.start();
 		discScanner.start();
-		
 		bttlScanner.start();
 		infoScanner.start();
 		mssgScanner.start();

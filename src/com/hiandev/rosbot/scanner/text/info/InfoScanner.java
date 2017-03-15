@@ -17,9 +17,6 @@ public class InfoScanner extends TextScanner {
 	public void onTextChanged(String[] rowTexts) {
 		super.onTextChanged(rowTexts);
 		try {
-			if (GlobalVar.getGameState() == GlobalVar.GAME_STATE_CHARACTER_SELECT) {
-				GlobalVar.setGameState(GlobalVar.GAME_STATE_BATTLE);
-			}
 			if (GlobalVar.getGameState() != GlobalVar.GAME_STATE_BATTLE) {
 				return;
 			}

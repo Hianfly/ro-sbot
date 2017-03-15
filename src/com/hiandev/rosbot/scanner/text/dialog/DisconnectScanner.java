@@ -13,14 +13,14 @@ public class DisconnectScanner extends TextScanner {
 		setAssetsDir("./assets/text-dialog/");
 		setTextPixels(new int[][] { { 0, 0, 0 } });
 		setInterval(5000);
+		setDelay(5000);
 	}
 	
 	@Override
-	public void onTextChanged(String[] rowTexts) {
+	public final void onTextChanged(String[] rowTexts) {
 		super.onTextChanged(rowTexts);
 		try {
-			System.out.println(rowTexts[0]);
-			if (normalize(rowTexts[0]).toLowerCase().startsWith("terputus dari server.")) {
+			if (normalize(rowTexts[0]).toLowerCase().startsWith("terputus dari server")) {
 				onDisconnected();
 			}
 		} catch (Exception e) {
@@ -28,10 +28,9 @@ public class DisconnectScanner extends TextScanner {
 		}
 	}
 
-	public void onDisconnected() {
-		sleep(5000);
-		keyPush(KeyEvent.VK_ENTER);
+	private void onDisconnected() {
 		GlobalVar.setGameState(GlobalVar.GAME_STATE_DISCONNECT);
+		keyPush(KeyEvent.VK_ENTER);
 	}
 	
 }
