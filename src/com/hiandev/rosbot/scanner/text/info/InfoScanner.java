@@ -12,6 +12,7 @@ public class InfoScanner extends TextScanner {
 		setAssetsDir("./assets/text-info/");
 		setTextPixels(new int[][] { { 0, 0, 0 } });
 		setInterval(100);
+		setDelay(1123);
 	}
 	@Override
 	public void onTextChanged(String[] rowTexts) {

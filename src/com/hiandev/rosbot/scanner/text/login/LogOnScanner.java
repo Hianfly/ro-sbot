@@ -13,16 +13,35 @@ public class LogOnScanner extends TextScanner {
 		setAssetsDir("./assets/text-login/");
 		setTextPixels(new int[][] { { 0, 0, 0 } });
 		setInterval(5000);
-		setDelay(5000);
+		setDelay(4336);
 	}
 	
+	private boolean firstRun = true;
+	@Override
+	protected void onExecute() {
+		super.onExecute();
+		try {
+			if (firstRun) {
+				firstRun = false;
+				String[] textList = getCurrentTextList();
+				if (textList.length > 0 && normalize(textList[0]).toLowerCase().startsWith("logon")) {
+					GlobalVar.setGameState(GlobalVar.GAME_STATE_DISCONNECT);
+				}
+				else {
+					GlobalVar.setGameState(GlobalVar.GAME_STATE_BATTLE);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	@Override
 	public final void onTextChanged(String[] rowTexts) {
 		super.onTextChanged(rowTexts);
 		try {
-			System.out.println("### " + rowTexts[0]);
-			if (normalize(rowTexts[0]).toLowerCase().startsWith("logon")) {
+			if (rowTexts.length > 0 && normalize(rowTexts[0]).toLowerCase().startsWith("logon")) {
 				P : {
+					GlobalVar.setGameState(GlobalVar.GAME_STATE_DISCONNECT);
 					if (doLogon() <= 0) {
 						break P;
 					}
@@ -40,7 +59,6 @@ public class LogOnScanner extends TextScanner {
 			e.printStackTrace();
 		}
 	}
-
 	private int doLogon() {
 		Util.copyToClipboard(LogOnConfig.PASSWORD);
 		keyPaste();
@@ -48,7 +66,6 @@ public class LogOnScanner extends TextScanner {
 		keyPush(KeyEvent.VK_ENTER);
 		return 1;
 	}
-	
 	private int doServerSelection(int _x, int _y) {
 		int r = 20;
 		try {
@@ -72,7 +89,6 @@ public class LogOnScanner extends TextScanner {
 		}
 		return r;
 	}
-	
 	private int doCharacterSelection(int _x, int _y) {
 		int s = 20;
 		try {

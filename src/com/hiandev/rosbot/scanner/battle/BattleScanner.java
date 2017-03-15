@@ -25,6 +25,7 @@ public class BattleScanner extends Scanner {
     	this.cellNewSumm = new int [_h / Cell.SIZE][_w / Cell.SIZE][3];
     	this.cellNeutral = new int [_h / Cell.SIZE][_w / Cell.SIZE];
     	setInterval(10);
+		setDelay(1011);
     }
     @Override
     public boolean onStart() {

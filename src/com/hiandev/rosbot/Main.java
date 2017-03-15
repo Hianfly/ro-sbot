@@ -11,7 +11,7 @@ import com.hiandev.rosbot.scanner.ScannerFrame;
 import com.hiandev.rosbot.scanner.battle.MotionObject;
 import com.hiandev.rosbot.scanner.battle.BattleConfig;
 import com.hiandev.rosbot.scanner.battle.BattleScanner;
-import com.hiandev.rosbot.scanner.text.dialog.DisconnectScanner;
+import com.hiandev.rosbot.scanner.text.dialog.DialogScanner;
 import com.hiandev.rosbot.scanner.text.info.InfoScanner;
 import com.hiandev.rosbot.scanner.text.login.LogOnConfig;
 import com.hiandev.rosbot.scanner.text.login.LogOnScanner;
@@ -29,7 +29,7 @@ public class Main {
 	}
 
 	LogOnScanner       lognScanner = null;
-	DisconnectScanner  discScanner = null;
+	DialogScanner      dlogScanner = null;
 	MainBattleScanner  bttlScanner = null;
 	MainInfoScanner    infoScanner = null;
 	MainMessageScanner mssgScanner = null;
@@ -42,8 +42,8 @@ public class Main {
 
 			lognScanner = new LogOnScanner(271, 406);
 			lognScanner.setDebug(true);
-			discScanner = new DisconnectScanner(271, 288);
-			discScanner.setDebug(true);
+			dlogScanner = new DialogScanner(271, 288);
+			dlogScanner.setDebug(true);
 			
 			mssgScanner = new MainMessageScanner(5, 553 + 17);
 			mssgScanner.setScannerFrame(new ScannerFrame());
@@ -61,7 +61,7 @@ public class Main {
 		}
 		
 		lognScanner.start();
-		discScanner.start();
+		dlogScanner.start();
 		bttlScanner.start();
 		infoScanner.start();
 		mssgScanner.start();

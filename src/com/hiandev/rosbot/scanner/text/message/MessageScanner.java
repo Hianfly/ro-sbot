@@ -7,10 +7,11 @@ import com.hiandev.rosbot.scanner.text.TextScanner;
 public class MessageScanner extends TextScanner {
 	
 	public MessageScanner(int _x, int _y) throws AWTException {
-		super (_x + 5, _y, 580, 50);
+		super (_x + 5, _y, 580, 30); // 50
 		setAssetsDir("./assets/text-message/");
 		setTextPixels(new int[][] { { 0, 250, 250 } });
 		setInterval(100);
+		setDelay(1421);
 	}
 	
 	@Override
