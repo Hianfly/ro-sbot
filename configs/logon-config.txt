@@ -1,0 +1,6 @@
+# BASIC LOGON CONFIG
+#
+#
+
+auto_logon_enabled = 0
+password = 111111

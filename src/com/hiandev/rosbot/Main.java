@@ -13,8 +13,8 @@ import com.hiandev.rosbot.scanner.battle.BattleConfig;
 import com.hiandev.rosbot.scanner.battle.BattleScanner;
 import com.hiandev.rosbot.scanner.text.dialog.DialogScanner;
 import com.hiandev.rosbot.scanner.text.info.InfoScanner;
-import com.hiandev.rosbot.scanner.text.login.LogOnConfig;
-import com.hiandev.rosbot.scanner.text.login.LogOnScanner;
+import com.hiandev.rosbot.scanner.text.logon.LogOnConfig;
+import com.hiandev.rosbot.scanner.text.logon.LogOnScanner;
 import com.hiandev.rosbot.scanner.text.message.MessageScanner;
 import com.hiandev.rosbot.ui.UIFrame;
 

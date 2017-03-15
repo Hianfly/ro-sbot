@@ -1,4 +1,4 @@
-package com.hiandev.rosbot.scanner.text.login;
+package com.hiandev.rosbot.scanner.text.logon;
 
 import java.awt.AWTException;
 import com.hiandev.rosbot.scanner.text.TextScanner;

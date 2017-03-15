@@ -1,4 +1,4 @@
-package com.hiandev.rosbot.scanner.text.login;
+package com.hiandev.rosbot.scanner.text.logon;
 
 import java.awt.AWTException;
 import java.awt.event.KeyEvent;
@@ -16,6 +16,15 @@ public class LogOnScanner extends TextScanner {
 		setDelay(4336);
 	}
 	
+	@Override
+	protected boolean onStart() {
+		boolean start = super.onStart();
+		if (LogOnConfig.AUTO_LOGON_ENABLED == 0) {
+			start = false;
+			GlobalVar.setGameState(GlobalVar.GAME_STATE_BATTLE);
+		}
+		return start;
+	}
 	private boolean firstRun = true;
 	@Override
 	protected void onExecute() {
