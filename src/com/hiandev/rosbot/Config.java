@@ -6,7 +6,11 @@ import java.io.FileReader;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Config {
-
+	
+	public static String BATTLE_CONFIG_NAME = "";
+	public static String LOGON_CONFIG_NAME = "";
+	public static String SHORTCUT_CONFIG_NAME = "";
+		
 	public Config(String name) {
 		this.name = name;
 	}

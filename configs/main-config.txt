@@ -1,0 +1,3 @@
+battle_config_name = battle-config.txt
+logon_config_name = logon-config.txt
+shortcut_config_name = shortcut-config.txt

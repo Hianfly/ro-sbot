@@ -1,0 +1,120 @@
+# BASIC BATTLE CONFIG
+#
+#
+
+# Menghilangkan warna gelap pada layar.
+# Berfungsi untuk mempermudah proses penghapusan background / tanah / environment.
+# Value: 1 ~ 100
+#
+dark_pixel_removal_threshold = 70
+
+# Menghilangkan warna biru pada layar.
+# Berfungsi untuk mempermudah proses penghapusan background / tanah / environment.
+# Value: 1 ~ 100
+#
+blue_pixel_removal_threshold = 60
+
+# Menghilangkan backgrouxnd / tanah /environment.
+# Berfungsi untuk mempermudah deteksi motion / gerakan pada layar.
+# Value: 1 ~ 100
+#
+background_removal_threshold = 70
+
+# Membulatkan rata-rata pixels pada setiap cells.
+# Berfungsi untuk mempermudah profiling / pengenalan suatu object / item pada layar.
+# Value: 1 ~ 100
+#
+average_cell_pixels_floor = 20
+
+# Ketajaman deteksi motion / gerakan pada layar.
+# Semakin kecil value-nya semakin tajam deteksinya.
+# Value: 1 ~ 100
+#
+cell_motion_threshold = 10
+
+# Penambahan padding pada MotionObject ( kotak biru )
+# Semakin besar nilainya maka semakin mudah dalam pembentukan CrowdObject ( kotak merah )
+# Value: 1 ~ 10
+#
+motion_object_padding = 2
+
+# Batas apakah suatu Object dianggap sebagai MotionObject atau CrowdObject.
+# Karakter tidak akan menyerang CrowdObject.
+# Value: 1 ~ 100
+#
+min_crowd_object_size = 20
+max_crowd_object_size = 9999
+
+# Durasi minimal dan maksimal ketika karakter dalam mode attack ke suatu monster.
+# Ada kalanya karakter nyangkut ketika dalam mode attack.
+# Value dalam milliseconds ( 1 seconds = 1000 milliseconds )
+#
+max_attack_duration = 10000
+min_attack_duration = 500
+
+# Interval aplikasi dalam melakukan deteksi event ( idle, attack, moving, etc )
+# Semakin kecil value-nya maka karakter akan semakin agresif.
+# Value dalam milliseconds ( 1 seconds = 1000 milliseconds )
+#
+event_detection_interval = 1000
+
+# Untuk sekarang value-nya hanya 1 
+#
+#
+#
+when_attack_done_then = 1
+
+# Untuk sekarang value-nya hanya 1 
+#
+#
+#
+hard_scan_surrounding_for_items_flag = 1
+
+# Jika value-nya lebih besar dari 0 maka karakter diharapkan tidak diam pada satu tempat yang sama, selamanya.
+# 
+# Value dalam milliseconds ( 1 seconds = 1000 milliseconds )
+#
+max_stay_at_same_location_duration = 120000
+
+# Untuk sekarang value-nya hanya 1 
+#
+#
+#
+when_stay_at_same_location_reached_its_limit_then = 1
+
+# Delay yang dibutuhkan oleh karakter untuk memilai aksi baru setelah masuk ke mode idle
+# Semakin kecil value-nya maka karakter akan semakin agresif.
+# Value dalam milliseconds ( 1 seconds = 1000 milliseconds )
+#
+max_idle_duration = 2000
+
+# Untuk sekarang value-nya hanya 1 
+#
+#
+#
+when_idle_reached_its_limit_then = 1
+
+# 
+#
+#
+#
+do_teleportation_if_hp_below_than = 50
+use_potion_if_hp_below_than = 80
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

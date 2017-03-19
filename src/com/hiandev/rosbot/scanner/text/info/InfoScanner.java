@@ -11,7 +11,7 @@ public class InfoScanner extends TextScanner {
 		super (_x, _y, 220, 56);
 		setAssetsDir("./assets/text-info/");
 		setTextPixels(new int[][] { { 0, 0, 0 } });
-		setInterval(100);
+		setInterval(10);
 		setDelay(1123);
 	}
 	@Override

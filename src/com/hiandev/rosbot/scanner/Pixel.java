@@ -69,14 +69,14 @@ public class Pixel {
 			   ((pixel[1] *    1000l) +     1000000l) +
 			   ((pixel[2] *       1l) +        1000l);
     }
-	public static final int[] floorBlueOnePixels(int[] pixels) {
-		for (int i = 0; i < pixels.length; i += 3) {
-			if (pixels[i + 2] == 1) {
-				pixels[i + 2]  = 5;
-			}
-		}
-		return pixels;
-	}
+//	public static final int[] floorBlueOnePixels(int[] pixels) {
+//		for (int i = 0; i < pixels.length; i += 3) {
+//			if (pixels[i + 2] == 1) {
+//				pixels[i + 2]  = 5;
+//			}
+//		}
+//		return pixels;
+//	}
 	public static final int[] getAveragePixels(int[][] pixels, int prmFloorThreshold, boolean skipWhite, boolean changeSourcePixels) {
 		int r = 0;
 		int g = 0;

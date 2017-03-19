@@ -9,6 +9,7 @@ import java.util.Collections;
 import com.hiandev.rosbot.scanner.PreviewFrame;
 import com.hiandev.rosbot.scanner.ScannerFrame;
 import com.hiandev.rosbot.scanner.battle.MotionObject;
+import com.hiandev.rosbot.scanner.map.MapsScanner;
 import com.hiandev.rosbot.scanner.battle.BattleConfig;
 import com.hiandev.rosbot.scanner.battle.BattleScanner;
 import com.hiandev.rosbot.scanner.text.dialog.DialogScanner;
@@ -16,6 +17,8 @@ import com.hiandev.rosbot.scanner.text.info.InfoScanner;
 import com.hiandev.rosbot.scanner.text.logon.LogOnConfig;
 import com.hiandev.rosbot.scanner.text.logon.LogOnScanner;
 import com.hiandev.rosbot.scanner.text.message.MessageScanner;
+import com.hiandev.rosbot.task.Shortcut;
+import com.hiandev.rosbot.task.ShortcutConfig;
 import com.hiandev.rosbot.ui.UIFrame;
 
 /**
@@ -33,12 +36,15 @@ public class Main {
 	MainBattleScanner  bttlScanner = null;
 	MainInfoScanner    infoScanner = null;
 	MainMessageScanner mssgScanner = null;
+	MainMapsScanner     mapsScanner = null;
 	UIFrame            uiFrame     = null;
 	
 	public Main() {
 		try {
-			new BattleConfig().load();
-			new  LogOnConfig().load();
+			new     MainConfig("main-config.txt").load();
+			new   BattleConfig(MainConfig  .BATTLE_CONFIG_NAME).load();
+			new    LogOnConfig(MainConfig   .LOGON_CONFIG_NAME).load();
+			new ShortcutConfig(MainConfig.SHORTCUT_CONFIG_NAME).load();
 
 			lognScanner = new LogOnScanner(271, 406);
 			lognScanner.setDebug(true);
@@ -55,6 +61,10 @@ public class Main {
 			infoScanner = new MainInfoScanner(5, 30);
 			infoScanner.setScannerFrame(new ScannerFrame());
 			infoScanner.setDebug(true);
+			mapsScanner = new MainMapsScanner();
+			mapsScanner.setScannerFrame(new ScannerFrame());
+			mapsScanner.setDebug(true);
+			mapsScanner.setPreviewFrame(new PreviewFrame(15, 0));
 			uiFrame = new UIFrame(bttlScanner._w + 15, 0, 200, bttlScanner._h);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -65,7 +75,60 @@ public class Main {
 		bttlScanner.start();
 		infoScanner.start();
 		mssgScanner.start();
+//		mapsScanner.start();
 		uiFrame.show();
+	}
+	
+	public class MainConfig extends Config {
+
+		public MainConfig(String name) {
+			super (name);
+		}
+		
+		@Override
+		protected void onLoaded() {
+			BATTLE_CONFIG_NAME   = getString(  "battle_config_name",   "battle-config.txt");
+			LOGON_CONFIG_NAME    = getString(   "logon_config_name",    "logon-config.txt");
+			SHORTCUT_CONFIG_NAME = getString("shortcut_config_name", "shortcut-config.txt");
+		}
+		
+	}
+	
+	
+	public class MainMapsScanner extends MapsScanner {
+		
+		public MainMapsScanner() throws AWTException {
+			super ();
+		}
+
+		@Override
+		public void onLocationChanged(int _mx, int _my) {
+			System.out.println("Location --> " + _mx + " : "  + _my + " : " + getRouteIndex());
+			int[] r = getNextRoute();
+			if (r == null) {
+				setRouteIndex(-1);
+				reverseRoutes();
+				return;
+			}
+			boolean routeChanged = false;
+			if (Math.abs(_mx - r[0]) <= 1 && Math.abs(_my - r[1]) <= 1) {
+				setRouteIndex(getRouteIndex() + 1);
+				routeChanged = true;
+			}
+			if (routeChanged) {
+				int[] n = getNextRoute();
+				if (n == null) {
+					return;
+				}
+				int  xx = 400 + ((n[0] - _mx) * 90);
+				int  yy = 300 + ((n[1] - _my) * 80);
+				System.out.println(xx + ":" + yy);
+				bttlScanner.mouseGoto(xx, yy);
+				sleep(100);
+				bttlScanner.mouseLeftClick();
+			}
+		}
+		
 	}
 	
 	public class MainMessageScanner extends MessageScanner {
@@ -75,8 +138,6 @@ public class Main {
 	}
 	
 	public class MainInfoScanner extends InfoScanner {
-		private int prmPotionThreshold = 80;
-		private int prmTeleportThreshold = 60;
 		public MainInfoScanner(int _x, int _y) throws AWTException {
 			super (_x, _y);
 		}
@@ -84,39 +145,24 @@ public class Main {
 		protected void onPreExecute() {
 			try {
 				super.onPreExecute();
-				if (getHpMax() == 0) {
-					return;
-				}
-				long now = System.currentTimeMillis();
-				if (lastHpChangedTime > 0 && now - lastHpChangedTime > 3000) {
-					lastHpChangedTime = 0;
-					int percentage = (getHp() * 100) / getHpMax();
-					if (percentage < prmPotionThreshold) {
-						keyPush(KeyEvent.VK_X);
-						sleep(50);
-					}
+				int percentage = getHpMax() == 0 ? 100 : (getHp() * 100) / getHpMax();
+				if (percentage < BattleConfig.USE_POTION_IF_HP_BELOW_THAN) {
+					bttlScanner.consumeHpPotion(50);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		private long lastHpChangedTime = 0; 
 		@Override
 		protected void onHpChanged(int oldHp, int newHp, int oldHpMax, int newHpMax) {
-			super.onHpChanged(oldHp, newHp, oldHpMax, newHpMax);
 			try {
-				if (newHpMax == 0) {
-					return;
+				super.onHpChanged(oldHp, newHp, oldHpMax, newHpMax);
+				int percentage = newHpMax == 0 ? 100 : (newHp * 100) / newHpMax;
+				if (percentage < BattleConfig.DO_TELEPORTATION_IF_HP_BELOW_THAN && newHp < oldHp) {
+					bttlScanner.teleport(50);
 				}
-				lastHpChangedTime = System.currentTimeMillis();
-				int percentage = (newHp * 100) / newHpMax;
-				if (percentage < prmTeleportThreshold) {
-					keyPush(KeyEvent.VK_Z);
-					sleep(50);
-				}
-				if (percentage < prmPotionThreshold) {
-					keyPush(KeyEvent.VK_X);
-					sleep(50);
+				if (percentage < BattleConfig.USE_POTION_IF_HP_BELOW_THAN) {
+					bttlScanner.consumeHpPotion(50);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -126,7 +172,6 @@ public class Main {
 		protected void onSpChanged(int oldSp, int newSp, int oldSpMax, int newSpMax) {
 			super.onSpChanged(oldSp, newSp, oldSpMax, newSpMax);
 		}
-		
 	}
 	
 	public class MainBattleScanner extends BattleScanner {
@@ -136,7 +181,13 @@ public class Main {
 		}
 		
 		long teleportDefaultInterval = 1000 * 60 * 2;
-		long teleportLastTime        = 0;
+		long teleportLastTime = 0;
+		@Override
+		protected int onTeleported() {
+			int t = super.onTeleported();
+			teleportLastTime = System.currentTimeMillis();
+			return t;
+		}
 		@Override
 		public int onIdle(long duration, int prevMode) {
 			int forceRetry = 0;
@@ -147,21 +198,19 @@ public class Main {
 		  	if (GlobalVar.getGameState() != GlobalVar.GAME_STATE_BATTLE) {
 		  		return forceRetry;
 		  	}
+//		  	if (forceRetry == 0) {
+//		  		return forceRetry;
+//		  	}
 		  	/*
-		  	 * 
-		  	 * 
 		  	 * 
 		  	 */
 			long now = System.currentTimeMillis();
-//			if (teleportLastTime > 0 && now - teleportLastTime < 500) {
-//				return 0;
-//			}
-			
-			boolean doit = doWhenStayAtSameLocationReachedItsLimit(now, duration);
-			if (doit) {
-				return forceRetry;
+			if (teleportLastTime > 0 && now - teleportLastTime < 1000) {
+				return 0;
 			}
-
+		  	/*
+		  	 * 
+		  	 */
 			if (isAttackDone(duration, prevMode)) {
 				switch (BattleConfig.WHEN_ATTACK_DONE_THEN) {
 				case 1: 
@@ -172,7 +221,23 @@ public class Main {
 		  			break;
 				}
 		  	}
-
+		  	/*
+		  	 * 
+		  	 */
+			boolean push = Shortcut.getInstance().push(this);
+			if (push) {
+				return 0;
+			}
+		  	/*
+		  	 * 
+		  	 */
+			boolean doit = doWhenStayAtSameLocationReachedItsLimit(now, duration);
+			if (doit) {
+				return forceRetry;
+			}
+		  	/*
+		  	 * 
+		  	 */
 			ArrayList<MotionObject> moList = bttlScanner.getMotionObjetList(0);
 			if (moList.size() > 0) {
 				Collections.sort(moList, new BattleScanner.MotionObjectDistanceComparator());
@@ -196,6 +261,9 @@ public class Main {
 				cancel();
 				doWhenIdleReachedItsLimit(now, duration);
 			}
+		  	/*
+		  	 * 
+		  	 */
 			return forceRetry;
 		}
 		
@@ -232,8 +300,10 @@ public class Main {
 			if (doit) {
 				switch (BattleConfig.WHEN_IDLE_REACHED_ITS_LIMIT_THEN) {
 				case 1:
-					teleportLastTime = now;
-					teleport(100);
+					teleport();
+					break;
+				case 2:
+					
 					break;
 				}
 			}
@@ -245,7 +315,6 @@ public class Main {
 			if (doit) {
 				switch (BattleConfig.WHEN_STAY_AT_SAME_LOCATION_REACHED_ITS_LIMIT_THEN) {
 				case 1:
-					teleportLastTime = now;
 			  		teleport();
 					break;
 				}

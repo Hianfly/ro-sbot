@@ -24,6 +24,7 @@ public class BattleScanner extends Scanner {
     	this.cellOldSumm = new int [_h / Cell.SIZE][_w / Cell.SIZE][3];
     	this.cellNewSumm = new int [_h / Cell.SIZE][_w / Cell.SIZE][3];
     	this.cellNeutral = new int [_h / Cell.SIZE][_w / Cell.SIZE];
+    	this.cellItem    = new long[_h / Cell.SIZE][_w / Cell.SIZE];
     	setInterval(10);
 		setDelay(1011);
     }
@@ -40,6 +41,7 @@ public class BattleScanner extends Scanner {
 			// Step 1
 			createCellMatrix();
 			removeDarkPixels(BattleConfig.DARK_PIXEL_REMOVAL_THRESHOLD); // 50
+//			removeBluePixels(BattleConfig.BLUE_PIXEL_REMOVAL_THRESHOLD); // 50
 			removeBackground(BattleConfig.BACKGROUND_REMOVAL_THRESHOLD); // 80
 
 			// Step 2
@@ -50,8 +52,9 @@ public class BattleScanner extends Scanner {
 			createOldCellSummary();
 
 			// Step 3
-//			createItemProfile();
-
+//			createCellItem();
+//			renderCellItem();
+			
 			// Step 4
 			createMotionObject();
 			expandMotionObject(BattleConfig.MOTION_OBJECT_PADDING);
@@ -76,7 +79,9 @@ public class BattleScanner extends Scanner {
 	protected int onIdle(long duration, int prevMode) {
 		return 0;
 	}
-	
+	protected int onTeleported() {
+		return 0;
+	}
     /*
      * 
      * 
@@ -142,11 +147,11 @@ public class BattleScanner extends Scanner {
     		}
     	}
     	// Buff List
-    	for (int x = 33; x < 120; x++) {
-    		for (int y = 149; y < 160; y++) {
-    	    	cellNeutral[x][y] = 1;
-    		}
-    	}
+//    	for (int x = 33; x < 120; x++) {
+//    		for (int y = 149; y < 160; y++) {
+//    	    	cellNeutral[x][y] = 1;
+//    		}
+//    	}
     	// ???
     	for (int x = 0; x < 120; x++) {
     		for (int y = 0; y < 1; y++) {
@@ -185,12 +190,16 @@ public class BattleScanner extends Scanner {
 		for (int y = 0; y < cellMatrix.length; y++) {
 			for (int x = 0; x < cellMatrix[y].length; x++) {
 				int[] pixels = getScreenImage().getRaster().getPixels(x * Cell.SIZE, y * Cell.SIZE, Cell.SIZE, Cell.SIZE, (int[]) null);
-				Cell  cell   = new Cell(x, y, Pixel.floorBlueOnePixels(pixels), getCellDistance(x, y));
+//				Cell  cell   = new Cell(x, y, Pixel.floorBlueOnePixels(pixels), getCellDistance(x, y));
+				Cell  cell   = new Cell(x, y, pixels, getCellDistance(x, y));
 				cellMatrix[y][x] = cell;
 			}
 		}
 	}
 	private void removeDarkPixels(int threshold) {
+		if (threshold < 1 && threshold > 100) {
+			return;
+		}
 		for (int y = 0; y < cellMatrix.length; y++) {
 			for (int x = 0; x < cellMatrix[y].length; x++) {
 				if (cellNeutral[y][x] == 1) {
@@ -202,6 +211,39 @@ public class BattleScanner extends Scanner {
 						if (Pixel.isBelow (pixels[j], i, threshold)) {
 							Pixel.setPixel(pixels[j], i, 255, 255, 255);
 						}
+					}
+				}
+			}
+		}
+	}
+	private void removeBluePixels(int threshold) {
+		if (threshold < 1 && threshold > 100) {
+			return;
+		}
+		int r =  0;
+		int g = 50;
+		int b = 40;
+		for (int y = 0; y < cellMatrix.length; y++) {
+			for (int x = 0; x < cellMatrix[y].length; x++) {
+				if (cellNeutral[y][x] == 1) {
+					continue;
+				}
+				int[][] pixels = cellMatrix[y][x].pixels;
+				for (int j = 0; j < pixels.length; j += 1) {
+					for (int i = 0; i < pixels[j].length; i += 3) {
+//						if (Pixel.isBelow (pixels[j], i, threshold)) {
+//							Pixel.setPixel(pixels[j], i, 255, 255, 255);
+//						}
+						int rr = 0;
+						int gg = pixels[j][i + 1] - pixels[j][i + 0];
+						int bb = pixels[j][i + 2] - pixels[j][i + 0];
+						if (Math.abs(r - rr) <= 20 &&
+							Math.abs(g - gg) <= 20 &&
+							Math.abs(b - bb) <= 20) {
+							Pixel.setPixel(pixels[j], i, 255, 255, 255);
+						}
+						
+						
 					}
 				}
 			}
@@ -425,61 +467,57 @@ public class BattleScanner extends Scanner {
      * 
      * 
      */
-    private final ConcurrentHashMap<Long, String> ITEM_PIXEL_MAP = new ConcurrentHashMap<Long, String>();
-    private void createItemProfile() {
+	private long[][] cellItem = null;
+    private void createCellItem() {
+    	long now = System.currentTimeMillis();
+    	for (int y = 0; y < cellItem.length; y++) {
+			for (int x = 0; x < cellItem[y].length; x++) {
+				if (cellItem[y][x] > 0 && now - cellItem[y][x] > 1000) {
+					cellItem[y][x] = 0;
+				}
+			}
+    	}
+    	for (int y = 0; y < cellMatrix.length; y++) {
+			for (int x = 0; x < cellMatrix[y].length; x++) {
+				if (cellNeutral[y][x] == 1) {
+					continue;
+				}
+				if (cellMotion [y][x] == 0) {
+					continue;
+				}
+				int[][] pixels = cellMatrix[y][x].pixels;
+				P : for (int j = 0; j < pixels.length; j += 1) {
+					for (int i = 0; i < pixels[j].length; i += 3) {
+						if (pixels[j][i + 0] >= 1 &&
+							pixels[j][i + 1] >= 1 &&
+							pixels[j][i + 2] == 0) {
+							cellItem[y][x] = now;
+							break P;
+						}
+					}
+				}
+			}
+    	}
+    }
+    private void renderCellItem() {
 		for (int y = 0; y < cellMatrix.length; y++) {
 			for (int x = 0; x < cellMatrix[y].length; x++) {
 				if (cellNeutral[y][x] == 1) {
 					continue;
-				} 
-				if (cellMotion [y][x] == 0) {
-					continue;
 				}
-				if (Pixel.isMatch(cellNewSumm[y][x], 0, 255, 255, 255)) {
+				if (cellItem[y][x] == 0) {
 					continue;
 				}
 				int[][] pixels = cellMatrix[y][x].pixels;
 				for (int j = 0; j < pixels.length; j += 1) {
 					for (int i = 0; i < pixels[j].length; i += 3) {
-						if (Pixel.isMatch(pixels[j], i,  -1,  -1,   0)) {
-							ITEM_PIXEL_MAP.put(Pixel.createPixelKey(Pixel.getPixel(pixels[j], i)), "");
-						}
+						Pixel.setPixel(pixels[j], i, 255, 0, 0);
 					}
 				}
 			}
-		}
+    	}
 	}
-    public  int getItemPixelMapSize() {
-		return ITEM_PIXEL_MAP.size();
-	}
-	public  ArrayList<Cell> findItemCells(ArrayList<Cell> cellList, int threshold) {
-		ArrayList<Cell> itemList = new ArrayList<>();
-	  	for (Cell cell : cellList) {
-	  		for (int y = 0; y < cell.pixels.length; y++) {
-	  			int numF = 0;
-	  			int numT = 0;
-	  			for (int x = 0; x < cell.pixels[y].length; x += 3) {
-	  				if (Pixel.isMatch(cell.pixels[y], x, 255, 255, 255)) {
-	  					continue;
-	  				}
-	  				if (Pixel.isMatch(cell.pixels[y], x, 255,   0,   0)) {
-	  					continue;
-	  				}
-	  				int[] pixel = Pixel.getPixel(cell.pixels[y], x); pixel[2] = 0;
-		  			long  key   = Pixel.createPixelKey(pixel);
-		  			if (ITEM_PIXEL_MAP.get(key) != null) {
-		  				numF++;
-		  			}
-		  			numT++;
-	  			}
-	  			if (numT > 0 && (numF * 10) / numT >= threshold) {
-	  				itemList.add(cell);
-	  			}
-	  		}
-	  	}
-	  	return itemList;
-	}
-	
+    
 	/*
 	 * 
 	 * 
@@ -892,15 +930,32 @@ public class BattleScanner extends Scanner {
     	charMode = MODE_IDLE;
     	return r;
     }
+    public int consumeHpPotion(long sleep) {
+    	int r = 0;
+    	idleUpdateTime = 0;
+		keyPush(KeyEvent.VK_F2);
+    	sleep(sleep);
+		return r;
+    }
+    public int consumeHpPotion() {
+    	return consumeHpPotion(20);
+    }
     public int teleport(long sleep) {
     	int r = 0;
     	idleUpdateTime = 0;
-		keyPush(KeyEvent.VK_Z);
+		keyPush(KeyEvent.VK_F1);
     	sleep(sleep);
+    	onTeleported();
 		return r;
     }
     public int teleport() {
 		return teleport(20);
+    }
+    public int sit(int sleep) {
+    	int r = 0;
+    	keyPush(KeyEvent.VK_INSERT);
+    	sleep(sleep);
+    	return r;
     }
     public int move(Cell cell) {
     	int r = 0;

@@ -4,8 +4,8 @@ import com.hiandev.rosbot.Config;
 
 public class LogOnConfig extends Config {
 
-	public LogOnConfig() {
-		super ("logon-config.txt");
+	public LogOnConfig(String name) {
+		super (name);
 	}
 
 	public static int AUTO_LOGON_ENABLED = 0;

@@ -94,15 +94,19 @@ public abstract class Scanner extends Service {
     	robot.mouseRelease(InputEvent.BUTTON1_MASK);	
     }
 	public void mouseGoto(int inGameX, int inGameY) {
-		robot.mouseMove(_x + inGameX, _x + inGameY);
+		robot.mouseMove(_x + inGameX, _y + inGameY);
     }
 	public void mouseGotoCell(int cellX, int cellY) {
 		robot.mouseMove(_x + (cellX * Cell.SIZE) + 3, _y + (cellY * Cell.SIZE) + 3);
     }
 	public void keyPush(int keycode) {
+		keyPush(keycode, 0);
+	}
+	public void keyPush(int keycode, long delay) {
 		robot.keyPress(keycode);
     	sleep(20);
 		robot.keyRelease(keycode);
+		sleep(delay);
 	}
 	public void keyPaste() {
 	    robot.keyPress  (KeyEvent.VK_CONTROL);
