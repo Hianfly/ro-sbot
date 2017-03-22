@@ -64,7 +64,7 @@ public class Main {
 			mapsScanner = new MainMapsScanner();
 			mapsScanner.setScannerFrame(new ScannerFrame());
 			mapsScanner.setDebug(true);
-			mapsScanner.setPreviewFrame(new PreviewFrame(15, 0));
+//			mapsScanner.setPreviewFrame(new PreviewFrame(15, 0));
 			uiFrame = new UIFrame(bttlScanner._w + 15, 0, 200, bttlScanner._h);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -76,7 +76,7 @@ public class Main {
 		infoScanner.start();
 		mssgScanner.start();
 //		mapsScanner.start();
-		uiFrame.show();
+//		uiFrame.show();
 	}
 	
 	public class MainConfig extends Config {
@@ -303,7 +303,7 @@ public class Main {
 					teleport();
 					break;
 				case 2:
-					
+					moveRandomly();
 					break;
 				}
 			}

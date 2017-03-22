@@ -968,5 +968,18 @@ public class BattleScanner extends Scanner {
     	sleep(20);
     	return r;
     }
-	
+	public int moveRandomly() {
+		int r = 0;
+		boolean run = true;
+		while (run) {
+			int x = new Random().nextInt(cellMatrix[0].length);
+			int y = new Random().nextInt(cellMatrix   .length);
+			if (cellNeutral[y][x] == 0) {
+				run = false;
+				r = move(cellMatrix[y][x]);
+			}
+		}
+		return r;
+	}
+    
 }
