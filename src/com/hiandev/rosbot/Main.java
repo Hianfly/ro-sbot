@@ -253,15 +253,18 @@ public class Main {
 					pick();
 					break;
 				default:
-					boolean moved = doWhenMoveAfterTeleport();
-					forceRetry = moved ? 0 : 1;
+					if (doWhenMoveAfterTeleport(true)) {
+						cancel();
+						break;
+					}
+					forceRetry = 1;
 					cancel();
 					doWhenIdleReachedItsLimit(now, duration);
 					break;
 				}
 			}
 			else {
-				doWhenMoveAfterTeleport();
+				doWhenMoveAfterTeleport(false);
 				cancel();
 				doWhenIdleReachedItsLimit(now, duration);
 			}
@@ -271,11 +274,11 @@ public class Main {
 			return forceRetry;
 		}
 		
-		private boolean doWhenMoveAfterTeleport() {
+		private boolean doWhenMoveAfterTeleport(boolean b) {
 			boolean move = false;
 			int maxDistance = BattleConfig.MAX_DISTANCE_WHEN_MOVING_AFTER_TELEPORT;
 			if (teleportMoveStatus == 0 && maxDistance > 0) {
-				moveRandomly(maxDistance, false);
+				moveRandomly(maxDistance, b);
 				teleportMoveStatus = 1;
 				move = true;
 			}
@@ -318,6 +321,9 @@ public class Main {
 					teleport();
 					break;
 				case 2:
+					teleportCreamy();
+					break;
+				case 3:
 					moveRandomly();
 					break;
 				}

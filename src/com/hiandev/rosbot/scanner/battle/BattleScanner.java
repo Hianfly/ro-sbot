@@ -951,6 +951,19 @@ public class BattleScanner extends Scanner {
     public int teleport() {
 		return teleport(40);
     }
+    public int teleportCreamy() {
+		return teleportCreamy(40);
+    }
+    public int teleportCreamy(long sleep) {
+    	int r = 0;
+    	idleUpdateTime = 0;
+		keyPush(KeyEvent.VK_F4);
+    	sleep(1000);
+		keyPush(KeyEvent.VK_ENTER);
+    	sleep(sleep);
+    	onTeleported();
+		return r;
+    }
     public int sit(int sleep) {
     	int r = 0;
     	keyPush(KeyEvent.VK_INSERT);

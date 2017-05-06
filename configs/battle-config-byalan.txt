@@ -15,13 +15,14 @@ when_attack_done_then = 1
 hard_scan_surrounding_for_items_flag = 1
 max_stay_at_same_location_duration = 120000
 when_stay_at_same_location_reached_its_limit_then = 1
-max_idle_duration = 2000
-when_idle_reached_its_limit_then = 1
-wait_time_after_teleport = 500
+max_idle_duration = 3000
+when_idle_reached_its_limit_then = 2
+wait_time_after_teleport = 1000
+max_distance_when_moving_after_teleport = 0
 
 
-do_teleportation_if_hp_below_than = 85
-use_potion_if_hp_below_than = 90
+do_teleportation_if_hp_below_than = 70
+use_potion_if_hp_below_than = 80
 
 
 
