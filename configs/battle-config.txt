@@ -18,10 +18,12 @@ when_stay_at_same_location_reached_its_limit_then = 1
 max_idle_duration = 2000
 when_idle_reached_its_limit_then = 1
 wait_time_after_teleport = 500
+max_distance_when_moving_after_teleport = 25
 
 
 do_teleportation_if_hp_below_than = 72
 use_potion_if_hp_below_than = 75
+use_potion_if_sp_below_than = 75;
 
 
 

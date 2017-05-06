@@ -56,7 +56,7 @@ public class Main {
 			mssgScanner.setDebug(true);
 			bttlScanner = new MainBattleScanner(5, 30);
 			bttlScanner.setScannerFrame(new ScannerFrame());
-			bttlScanner.setPreviewFrame(new PreviewFrame(200 + 15 + 15, 0));
+//			bttlScanner.setPreviewFrame(new PreviewFrame(200 + 15 + 15, 0));
 			bttlScanner.setDebug(false);
 			infoScanner = new MainInfoScanner(5, 30);
 			infoScanner.setScannerFrame(new ScannerFrame());
