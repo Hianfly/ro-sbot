@@ -36,7 +36,7 @@ public class Main {
 	MainBattleScanner  bttlScanner = null;
 	MainInfoScanner    infoScanner = null;
 	MainMessageScanner mssgScanner = null;
-	MainMapsScanner     mapsScanner = null;
+	MainMapsScanner    mapsScanner = null;
 	UIFrame            uiFrame     = null;
 	
 	public Main() {
@@ -76,7 +76,7 @@ public class Main {
 		infoScanner.start();
 		mssgScanner.start();
 //		mapsScanner.start();
-//		uiFrame.show();
+		uiFrame.show();
 	}
 	
 	public class MainConfig extends Config {
@@ -182,10 +182,12 @@ public class Main {
 		
 		long teleportDefaultInterval = 1000 * 60 * 2;
 		long teleportLastTime = 0;
+		long teleportMoveStatus = 0;
 		@Override
 		protected int onTeleported() {
 			int t = super.onTeleported();
 			teleportLastTime = System.currentTimeMillis();
+			teleportMoveStatus = 0;
 			return t;
 		}
 		@Override
@@ -251,13 +253,15 @@ public class Main {
 					pick();
 					break;
 				default:
-					forceRetry = 1;
+					boolean moved = doWhenMoveAfterTeleport();
+					forceRetry = moved ? 0 : 1;
 					cancel();
 					doWhenIdleReachedItsLimit(now, duration);
 					break;
 				}
 			}
 			else {
+				doWhenMoveAfterTeleport();
 				cancel();
 				doWhenIdleReachedItsLimit(now, duration);
 			}
@@ -265,6 +269,17 @@ public class Main {
 		  	 * 
 		  	 */
 			return forceRetry;
+		}
+		
+		private boolean doWhenMoveAfterTeleport() {
+			boolean move = false;
+			int maxDistance = BattleConfig.MAX_DISTANCE_WHEN_MOVING_AFTER_TELEPORT;
+			if (teleportMoveStatus == 0 && maxDistance > 0) {
+				moveRandomly(maxDistance, false);
+				teleportMoveStatus = 1;
+				move = true;
+			}
+			return move;
 		}
 		
 		private boolean isAttackDone(long duration, int prevMode) {
