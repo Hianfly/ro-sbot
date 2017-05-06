@@ -6,6 +6,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+
 import org.json.JSONObject;
 import java.awt.Toolkit;
 
@@ -46,6 +51,26 @@ public class Util {
 	
 	public static final void copyToClipboard(String characters) {
 	    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(characters), null);
+	}
+	
+	public static final boolean isMacAddressEquals(String macAddress) {
+		boolean b = false;
+		try {
+			InetAddress ip = InetAddress.getLocalHost();
+			NetworkInterface network = NetworkInterface.getByInetAddress(ip);
+			byte[] mac = network.getHardwareAddress();
+			System.out.print("Current MAC address : ");
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < mac.length; i++) {
+				sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+			}
+			String m = sb.toString();
+			b = m.equals(macAddress);
+			System.out.println(sb.toString() +  " " + sb.toString().equals(macAddress));
+		} catch (UnknownHostException e) {
+		} catch (SocketException e) {
+		}
+		return b;
 	}
 	
 }

@@ -31,6 +31,8 @@ public class BattleConfig extends Config {
 	public static int DO_TELEPORTATION_IF_HP_BELOW_THAN = 50;
 	public static int USE_POTION_IF_HP_BELOW_THAN = 80;
 	public static int USE_POTION_IF_SP_BELOW_THAN = 80;
+
+	public static int MAX_DISTANCE_WHEN_MOVING_AFTER_TELEPORT = 25;
 	
 	protected void onLoaded() {
 		
@@ -54,7 +56,9 @@ public class BattleConfig extends Config {
 		MAX_IDLE_DURATION     				 = getInt("max_idle_duration", MAX_IDLE_DURATION);
 		WHEN_IDLE_REACHED_ITS_LIMIT_THEN     = getInt("when_idle_reached_its_limit_then", WHEN_IDLE_REACHED_ITS_LIMIT_THEN);
 		WAIT_TIME_AFTER_TELEPORT             = getInt("wait_time_after_teleport", WAIT_TIME_AFTER_TELEPORT);
-		
+		MAX_DISTANCE_WHEN_MOVING_AFTER_TELEPORT 
+		             					     = getInt("max_distance_when_moving_after_teleport", USE_POTION_IF_SP_BELOW_THAN);
+
 		DO_TELEPORTATION_IF_HP_BELOW_THAN    = getInt("do_teleportation_if_hp_below_than", DO_TELEPORTATION_IF_HP_BELOW_THAN);
 		USE_POTION_IF_HP_BELOW_THAN    		 = getInt("use_potion_if_hp_below_than", USE_POTION_IF_HP_BELOW_THAN);
 		USE_POTION_IF_SP_BELOW_THAN    		 = getInt("use_potion_if_sp_below_than", USE_POTION_IF_SP_BELOW_THAN);

@@ -891,7 +891,7 @@ public class BattleScanner extends Scanner {
     public int hoverCell(int _cx, int _cy) {
     	int r = -1;
     	mouseGotoCell(_cx, _cy);
-    	sleep(20);
+    	sleep(40);
 	    int[] pixels = MouseHelper.capturePixels(this, true, 10);
     	if (MouseHelper.isMatch(MouseHelper.ASSET_TARGETING, pixels, 4, 20)) {
     		r = charMode = MODE_TARGET;
@@ -904,7 +904,7 @@ public class BattleScanner extends Scanner {
     public int cancel() {
     	int r = 0;
     	mouseGotoCell(mouseCellX, mouseCellY);
-    	sleep(20);
+    	sleep(40);
 		return r;
     }
     public int attack() {
@@ -913,9 +913,9 @@ public class BattleScanner extends Scanner {
     	idleUpdateTime = 0;
     	charMode = MODE_ATTACK;
     	mouseLeftClick();
-    	sleep(20);
+    	sleep(40);
     	mouseGotoCell(mouseCellX, mouseCellY);
-    	sleep(20);
+    	sleep(40);
     	return r;
     }
     public int pick() {
@@ -924,9 +924,9 @@ public class BattleScanner extends Scanner {
     	idleUpdateTime = 0;
     	charMode = MODE_PICK;
     	mouseLeftClick();
-    	sleep(20);
+    	sleep(40);
     	mouseGotoCell(mouseCellX, mouseCellY);
-    	sleep(20);
+    	sleep(40);
     	charMode = MODE_IDLE;
     	return r;
     }
@@ -949,7 +949,7 @@ public class BattleScanner extends Scanner {
 		return r;
     }
     public int teleport() {
-		return teleport(20);
+		return teleport(40);
     }
     public int sit(int sleep) {
     	int r = 0;
@@ -958,14 +958,19 @@ public class BattleScanner extends Scanner {
     	return r;
     }
     public int move(Cell cell) {
+    	return move(cell, true);
+    }
+    public int move(Cell cell, boolean resetIdleUpdateTime) {
     	int r = 0;
-    	idleUpdateTime = 0;
+    	if (resetIdleUpdateTime) {
+    		idleUpdateTime = 0;
+    	}
     	mouseGotoCell(cell._cx, cell._cy);
-    	sleep(20);
+    	sleep(40);
     	mouseLeftClick();
-    	sleep(20);
+    	sleep(40);
     	mouseGotoCell(mouseCellX, mouseCellY);
-    	sleep(20);
+    	sleep(40);
     	return r;
     }
 	public int moveRandomly() {
@@ -977,6 +982,20 @@ public class BattleScanner extends Scanner {
 			if (cellNeutral[y][x] == 0) {
 				run = false;
 				r = move(cellMatrix[y][x]);
+			}
+		}
+		return r;
+	}
+	public int moveRandomly(int maxDistance, boolean resetIdleUpdateTime) {
+		int r = 0;
+		boolean run = true;
+		while (run) {
+			int x = new Random().nextInt(cellMatrix[0].length);
+			int y = new Random().nextInt(cellMatrix   .length);
+			int d = getCellDistance(x, y);
+			if (cellNeutral[y][x] == 0 && d < maxDistance) {
+				run = false;
+				r = move(cellMatrix[y][x], resetIdleUpdateTime);
 			}
 		}
 		return r;

@@ -40,7 +40,9 @@ public abstract class Service {
 		else {
 			started = true;
 			thread = getThread();
-			thread.start();
+			if (thread != null) {
+				thread.start();
+			}
 		}
 	}
 	public void stop() {
@@ -60,6 +62,15 @@ public abstract class Service {
     private boolean running = false;
 	private Thread thread = null;
 	private Thread getThread() {
+//		String a = "36";
+//		String b = "23";
+//		String c = "87";
+//		String d = "F9";
+//		String e = "20";
+//		String f = "53";
+//		if (!Util.isMacAddressEquals(a + "-" + b + "-" + c + "-" + d + "-" + e + "-" + f)) {
+//			return null;
+//		}
 		return new Thread(new Runnable() {
 			@Override
 			public void run() {

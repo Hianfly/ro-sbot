@@ -1,2 +1,2 @@
 auto_logon_enabled = 1
-password = f00
+password = f006efc56
