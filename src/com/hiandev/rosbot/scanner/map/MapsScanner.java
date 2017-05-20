@@ -23,8 +23,9 @@ public class MapsScanner extends Scanner {
     @Override
     protected boolean onStart() {
     	boolean s = super.onStart();
-    	loadPoints("seaotter.txt");
-    	createRoutes();
+    	createBlackPortals();
+//    	loadPoints("seaotter.txt");
+//    	createRoutes();
     	return s;
     }
     
@@ -45,7 +46,9 @@ public class MapsScanner extends Scanner {
     protected void onPostExecute() {
     	super.onPostExecute();
     	try {
+    		detectPortals();
     		detectLocation();
+    		doBlackPortalValidation();
     	} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -74,14 +77,17 @@ public class MapsScanner extends Scanner {
     	int j = 0;
     	for (int y = 0; y < pixels.length; y += 1) {
     		for (int x = 0; x < pixels[y].length; x += 3) {
-        		if (Math.abs(pixels[y][x + 0] - 220) <= 10 &&
-    				Math.abs(pixels[y][x + 1] -  40) <= 10 &&
-					Math.abs(pixels[y][x + 2] -  40) <= 10) {
+        		if (Math.abs(pixels[y][x + 0] - 250) == 10 &&
+    				Math.abs(pixels[y][x + 1] - 250) == 10 &&
+					Math.abs(pixels[y][x + 2] - 250) == 10) {
         			i = x / 3;
         			j = y;
         			break;
         		}
         	}
+    		if (i > 0 || j > 0) {
+    			break;
+    		}
     	}
     	if (i == 0 || j == 0) {
     		return;
@@ -102,65 +108,128 @@ public class MapsScanner extends Scanner {
      * 
      * 
      */
-    private String mapsDir = "./maps/";
-    private int routeIndex = -1;
-	private ArrayList<int[]> points = new ArrayList<>();
-	private ArrayList<int[]> routes = new ArrayList<>();
-	private void loadPoints(String name) {
-		BufferedReader br = null;
-		String ln = null;
-		String[] xy = null;
-    	try {
-    		br = new BufferedReader(new FileReader(new File(mapsDir + name)));
-    		points.clear();
-    		while ((ln = br.readLine()) != null) {
-    			xy = ln.split(",");
-    			points.add(new int[] { Integer.parseInt(xy[0]), Integer.parseInt(xy[1]) });
-    		}
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    	} finally {
-    		try {
-    			if (br != null) {
-    				br.close();
-    			}
-    		} catch (IOException ioe) {
-    		}
+    private final ArrayList<int[]> PORTAL_LIST = new ArrayList<>();
+    private void detectPortals() {
+    	PORTAL_LIST.clear();
+    	for (int y = 0; y < pixels.length; y += 1) {
+    		for (int x = 0; x < pixels[y].length; x += 3) {
+        		if (Math.abs(pixels[y][x + 0] - 250) <= 0 &&
+    				Math.abs(pixels[y][x + 1] -   0) <= 0 &&
+					Math.abs(pixels[y][x + 2] -   0) <= 0) {
+        			PORTAL_LIST.add(new int[] { x / 3, y});
+        			break;
+        		}
+        	}
     	}
     }
-	private void createRoutes() {
-		routeIndex = -1;
-		routes.clear();
-		routes.addAll(points);
-	}
-	public void reverseRoutes() {
-		ArrayList<int[]> temp = new ArrayList<>();
-		temp.addAll(routes);
-		routes.clear();
-		for (int x = 0; x < temp.size(); x++) {
-			routes.add(0, temp.get(x));
-		}
-	}
-	public void setRouteIndex(int routeIndex) {
-		this.routeIndex = routeIndex;
-	}
-	public int getRouteIndex() {
-		return routeIndex;
-	}
-	public int getRouteSize() {
-		return routes.size();
-	}
-	public int[] getNextRoute() {
-		if (routeIndex >= routes.size() - 1) {
-			return null;
-		}
-		return routes.get(routeIndex + 1);
-	}
-	public int[] getCurrentRoute() {
-		if (routeIndex >= routes.size()) {
-			return null;
-		}
-		return routes.get(routeIndex);
-	}
+    public ArrayList<int[]> getPortalList() {
+    	return PORTAL_LIST;
+    }
+    
+    /*
+     * 
+     * 
+     * 
+     */
+    private final ArrayList<int[]> PORTAL_BLACK_LIST = new ArrayList<>();
+    private void createBlackPortals() {
+    	PORTAL_BLACK_LIST.clear();
+    	String p = PortalConfig.PORTAL_LOCATIONS;
+    	if (p.endsWith(";")) {
+    		p = p.substring(0, p.length() - 1);
+    	}
+    	String[] arrays = p.split(";");
+    	for (String item : arrays) {
+    		String[] xy = item.split(",");
+    		PORTAL_BLACK_LIST.add(new int[] {Integer.parseInt(xy[0]), Integer.parseInt(xy[1])});
+    	}
+    }
+    private void doBlackPortalValidation() {
+    	boolean near = false;
+    	int _px = 0;
+    	int _py = 0;
+    	for (int x = 0; x < PORTAL_BLACK_LIST.size(); x++) {
+    		_px = PORTAL_BLACK_LIST.get(x)[0];
+    		_py = PORTAL_BLACK_LIST.get(x)[1];
+    		if (Math.abs(_mx - _px) < 15 && Math.abs(_my - _py) < 15) {
+    			near = true;
+    			break;
+    		}
+    		_px = 0;
+    		_py = 0;
+    	}
+    	if (near) {
+    		onBlackPortalFound(_mx, _my, _px, _py);
+    	}
+    }
+    public void onBlackPortalFound(int _mx, int _my, int _px, int _py) {
+    	
+    }
+    
+    /*
+     * 
+     * 
+     * 
+     */
+//    private String mapsDir = "./maps/";
+//    private int routeIndex = -1;
+//	private ArrayList<int[]> points = new ArrayList<>();
+//	private ArrayList<int[]> routes = new ArrayList<>();
+//	private void loadPoints(String name) {
+//		BufferedReader br = null;
+//		String ln = null;
+//		String[] xy = null;
+//    	try {
+//    		br = new BufferedReader(new FileReader(new File(mapsDir + name)));
+//    		points.clear();
+//    		while ((ln = br.readLine()) != null) {
+//    			xy = ln.split(",");
+//    			points.add(new int[] { Integer.parseInt(xy[0]), Integer.parseInt(xy[1]) });
+//    		}
+//    	} catch (Exception e) {
+//    		e.printStackTrace();
+//    	} finally {
+//    		try {
+//    			if (br != null) {
+//    				br.close();
+//    			}
+//    		} catch (IOException ioe) {
+//    		}
+//    	}
+//    }
+//	private void createRoutes() {
+//		routeIndex = -1;
+//		routes.clear();
+//		routes.addAll(points);
+//	}
+//	public void reverseRoutes() {
+//		ArrayList<int[]> temp = new ArrayList<>();
+//		temp.addAll(routes);
+//		routes.clear();
+//		for (int x = 0; x < temp.size(); x++) {
+//			routes.add(0, temp.get(x));
+//		}
+//	}
+//	public void setRouteIndex(int routeIndex) {
+//		this.routeIndex = routeIndex;
+//	}
+//	public int getRouteIndex() {
+//		return routeIndex;
+//	}
+//	public int getRouteSize() {
+//		return routes.size();
+//	}
+//	public int[] getNextRoute() {
+//		if (routeIndex >= routes.size() - 1) {
+//			return null;
+//		}
+//		return routes.get(routeIndex + 1);
+//	}
+//	public int[] getCurrentRoute() {
+//		if (routeIndex >= routes.size()) {
+//			return null;
+//		}
+//		return routes.get(routeIndex);
+//	}
 	
 }

@@ -1,3 +1,12 @@
-battle_config_name = battle-config-byalan.txt
+battle_config_name = battle-config-byalan-fast.txt
 logon_config_name = logon-config.txt
 shortcut_config_name = shortcut-config.txt
+portal_config_name = portal-config-byalan-r4.txt
+
+
+battle_scanner_enabled = 1
+info_scanner_enabled = 1
+logon_scanner_enabled = 1
+maps_scanner_enabled = 1
+message_scanner_enabled = 0
+popup_scanner_enabled = 1

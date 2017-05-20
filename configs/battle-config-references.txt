@@ -88,9 +88,9 @@ when_stay_at_same_location_reached_its_limit_then = 1
 #
 max_idle_duration = 2000
 
-# Untuk sekarang value-nya hanya 1 
-#
-#
+# 1 = teleport using F1
+# 2 = teleport using F4
+# 3 = moving randomly without distance limitation
 #
 when_idle_reached_its_limit_then = 1
 

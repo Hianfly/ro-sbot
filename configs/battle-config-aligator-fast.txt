@@ -1,31 +1,31 @@
-dark_pixel_removal_threshold = 50
+dark_pixel_removal_threshold = 70
 blue_pixel_removal_threshold = 50
-background_removal_threshold = 50
-average_cell_pixels_floor = 10
-cell_motion_threshold = 10
-motion_object_padding = 2
-min_crowd_object_size = 20
+background_removal_threshold = 70
+average_cell_pixels_floor = 30
+cell_motion_threshold = 30
+motion_object_padding = 1
+min_crowd_object_size = 50
 max_crowd_object_size = 9999
-show_preview = 0
+show_preview = 1
 
 
-max_attack_duration = 7000
-min_attack_duration = 500
+max_attack_duration = 5000
+min_attack_duration = 750
 event_detection_interval = 500
 when_attack_done_then = 1
 hard_scan_surrounding_for_items_flag = 1
-max_stay_at_same_location_duration = 120000
+max_stay_at_same_location_duration = 15000
 when_stay_at_same_location_reached_its_limit_then = 1
-max_idle_duration = 2000
+max_idle_duration = 2500
 when_idle_reached_its_limit_then = 1
 wait_time_after_teleport = 500
 min_distance_when_moving_after_teleport = 0
 max_distance_when_moving_after_teleport = 0
 
 
-do_teleportation_if_hp_below_than = 75
+do_teleportation_if_hp_below_than = 70
 use_potion_if_hp_below_than = 75
-use_potion_if_sp_below_than = 0;
+use_potion_if_sp_below_than = 10
 
 
 

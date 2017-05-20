@@ -75,7 +75,7 @@ public class ScannerFrame {
             super.paintComponent(g);
             Graphics2D g2d = (Graphics2D) g.create();
             g2d.setBackground(getBackground());
-            g2d.setColor(Color.RED);
+            g2d.setColor(Color.CYAN);
             int x = 0;
            	int y = 0;
            	int w = getWidth()  - 1;

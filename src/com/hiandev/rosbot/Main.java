@@ -10,6 +10,7 @@ import com.hiandev.rosbot.scanner.PreviewFrame;
 import com.hiandev.rosbot.scanner.ScannerFrame;
 import com.hiandev.rosbot.scanner.battle.MotionObject;
 import com.hiandev.rosbot.scanner.map.MapsScanner;
+import com.hiandev.rosbot.scanner.map.PortalConfig;
 import com.hiandev.rosbot.scanner.battle.BattleConfig;
 import com.hiandev.rosbot.scanner.battle.BattleScanner;
 import com.hiandev.rosbot.scanner.text.dialog.DialogScanner;
@@ -20,6 +21,7 @@ import com.hiandev.rosbot.scanner.text.message.MessageScanner;
 import com.hiandev.rosbot.task.Shortcut;
 import com.hiandev.rosbot.task.ShortcutConfig;
 import com.hiandev.rosbot.ui.UIFrame;
+import com.sun.org.apache.bcel.internal.generic.POP;
 
 /**
  * @author Hian
@@ -45,6 +47,7 @@ public class Main {
 			new   BattleConfig(MainConfig  .BATTLE_CONFIG_NAME).load();
 			new    LogOnConfig(MainConfig   .LOGON_CONFIG_NAME).load();
 			new ShortcutConfig(MainConfig.SHORTCUT_CONFIG_NAME).load();
+			new   PortalConfig(MainConfig  .PORTAL_CONFIG_NAME).load();
 
 			lognScanner = new LogOnScanner(271, 406);
 			lognScanner.setDebug(true);
@@ -56,7 +59,9 @@ public class Main {
 			mssgScanner.setDebug(true);
 			bttlScanner = new MainBattleScanner(5, 30);
 			bttlScanner.setScannerFrame(new ScannerFrame());
-//			bttlScanner.setPreviewFrame(new PreviewFrame(200 + 15 + 15, 0));
+			if (BattleConfig.SHOW_PREVIEW == 1) {
+				bttlScanner.setPreviewFrame(new PreviewFrame(200 + 15 + 15, 0));
+			}
 			bttlScanner.setDebug(false);
 			infoScanner = new MainInfoScanner(5, 30);
 			infoScanner.setScannerFrame(new ScannerFrame());
@@ -64,18 +69,18 @@ public class Main {
 			mapsScanner = new MainMapsScanner();
 			mapsScanner.setScannerFrame(new ScannerFrame());
 			mapsScanner.setDebug(true);
-//			mapsScanner.setPreviewFrame(new PreviewFrame(15, 0));
 			uiFrame = new UIFrame(bttlScanner._w + 15, 0, 200, bttlScanner._h);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
-		lognScanner.start();
-		dlogScanner.start();
-		bttlScanner.start();
-		infoScanner.start();
-		mssgScanner.start();
-//		mapsScanner.start();
+		if (MainConfig.LOGON_SCANNER_ENABLED  == 1) lognScanner.start();
+		if (MainConfig.POPUP_SCANNER_ENABLED  == 1) dlogScanner.start();
+		if (MainConfig.BATTLE_SCANNER_ENABLED == 1) bttlScanner.start();
+		if (MainConfig.INFO_SCANNER_ENABLED   == 1) infoScanner.start();
+		if (MainConfig.MESSAGE_SCANNER_ENABLED== 1) mssgScanner.start();
+		if (MainConfig.MAPS_SCANNER_ENABLED   == 1) mapsScanner.start();
+		
 		uiFrame.show();
 	}
 	
@@ -87,9 +92,16 @@ public class Main {
 		
 		@Override
 		protected void onLoaded() {
-			BATTLE_CONFIG_NAME   = getString(  "battle_config_name",   "battle-config.txt");
-			LOGON_CONFIG_NAME    = getString(   "logon_config_name",    "logon-config.txt");
-			SHORTCUT_CONFIG_NAME = getString("shortcut_config_name", "shortcut-config.txt");
+			BATTLE_CONFIG_NAME      = getString(  "battle_config_name",   "battle-config.txt");
+			LOGON_CONFIG_NAME       = getString(   "logon_config_name",    "logon-config.txt");
+			SHORTCUT_CONFIG_NAME    = getString("shortcut_config_name", "shortcut-config.txt");
+			PORTAL_CONFIG_NAME      = getString(  "portal_config_name",   "portal-config.txt");
+			BATTLE_SCANNER_ENABLED  = getInt( "battle_scanner_enabled", 1);
+			INFO_SCANNER_ENABLED    = getInt(   "info_scanner_enabled", 1);
+			MESSAGE_SCANNER_ENABLED = getInt("message_scanner_enabled", 1);
+			LOGON_SCANNER_ENABLED   = getInt(  "logon_scanner_enabled", 1);
+			POPUP_SCANNER_ENABLED   = getInt(  "popup_scanner_enabled", 1);
+			MAPS_SCANNER_ENABLED    = getInt(   "maps_scanner_enabled", 1);
 		}
 		
 	}
@@ -102,31 +114,45 @@ public class Main {
 		}
 
 		@Override
+		public void onBlackPortalFound(int _mx, int _my, int _px, int _py) {
+			System.out.println("BlackPortal[" + _px + "," + _py + "] found!");
+			bttlScanner.teleport();
+		}
+		
+		@Override
 		public void onLocationChanged(int _mx, int _my) {
-			System.out.println("Location --> " + _mx + " : "  + _my + " : " + getRouteIndex());
-			int[] r = getNextRoute();
-			if (r == null) {
-				setRouteIndex(-1);
-				reverseRoutes();
-				return;
-			}
-			boolean routeChanged = false;
-			if (Math.abs(_mx - r[0]) <= 1 && Math.abs(_my - r[1]) <= 1) {
-				setRouteIndex(getRouteIndex() + 1);
-				routeChanged = true;
-			}
-			if (routeChanged) {
-				int[] n = getNextRoute();
-				if (n == null) {
-					return;
+			try {
+				if (uiFrame != null && uiFrame.getFramePanel() != null) {
+					uiFrame.getFramePanel().updateYourLocationInfo(_mx, _my);
+					uiFrame.getFramePanel().updatePortalInfo(getPortalList());
 				}
-				int  xx = 400 + ((n[0] - _mx) * 90);
-				int  yy = 300 + ((n[1] - _my) * 80);
-				System.out.println(xx + ":" + yy);
-				bttlScanner.mouseGoto(xx, yy);
-				sleep(100);
-				bttlScanner.mouseLeftClick();
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
+//			System.out.println("Location --> " + _mx + " : "  + _my + " : " + getRouteIndex());
+//			int[] r = getNextRoute();
+//			if (r == null) {
+//				setRouteIndex(-1);
+//				reverseRoutes();
+//				return;
+//			}
+//			boolean routeChanged = false;
+//			if (Math.abs(_mx - r[0]) <= 1 && Math.abs(_my - r[1]) <= 1) {
+//				setRouteIndex(getRouteIndex() + 1);
+//				routeChanged = true;
+//			}
+//			if (routeChanged) {
+//				int[] n = getNextRoute();
+//				if (n == null) {
+//					return;
+//				}
+//				int  xx = 400 + ((n[0] - _mx) * 90);
+//				int  yy = 300 + ((n[1] - _my) * 80);
+//				System.out.println(xx + ":" + yy);
+//				bttlScanner.mouseGoto(xx, yy);
+//				sleep(100);
+//				bttlScanner.mouseLeftClick();
+//			}
 		}
 		
 	}
@@ -171,6 +197,10 @@ public class Main {
 		@Override
 		protected void onSpChanged(int oldSp, int newSp, int oldSpMax, int newSpMax) {
 			super.onSpChanged(oldSp, newSp, oldSpMax, newSpMax);
+			int percentage = newSpMax == 0 ? 100 : (newSp * 100) / newSpMax;
+			if (percentage < BattleConfig.USE_POTION_IF_SP_BELOW_THAN) {
+				bttlScanner.consumeSpPotion(50);
+			}
 		}
 	}
 	
@@ -233,7 +263,7 @@ public class Main {
 		  	/*
 		  	 * 
 		  	 */
-			boolean doit = doWhenStayAtSameLocationReachedItsLimit(now, duration);
+			boolean doit = doWhenStayAtSameLocationReachedItsLimit(teleportLastTime <= 0 ? 0 : now - teleportLastTime);
 			if (doit) {
 				return forceRetry;
 			}
@@ -276,9 +306,10 @@ public class Main {
 		
 		private boolean doWhenMoveAfterTeleport(boolean b) {
 			boolean move = false;
+			int minDistance = BattleConfig.MIN_DISTANCE_WHEN_MOVING_AFTER_TELEPORT;
 			int maxDistance = BattleConfig.MAX_DISTANCE_WHEN_MOVING_AFTER_TELEPORT;
-			if (teleportMoveStatus == 0 && maxDistance > 0) {
-				moveRandomly(maxDistance, b);
+			if (teleportMoveStatus == 0 && minDistance > 0 && maxDistance > 0) {
+				moveRandomly(minDistance, maxDistance, b);
 				teleportMoveStatus = 1;
 				move = true;
 			}
@@ -331,12 +362,18 @@ public class Main {
 			return doit;
 		}
 		
-		private boolean doWhenStayAtSameLocationReachedItsLimit(long now, long duration) {
-			boolean doit = BattleConfig.MAX_STAY_AT_SAME_LOCATION_DURATION > 0 && duration > BattleConfig.MAX_STAY_AT_SAME_LOCATION_DURATION;
+		private boolean doWhenStayAtSameLocationReachedItsLimit(long duration) {
+			boolean doit = BattleConfig.MAX_STAY_AT_SAME_LOCATION_DURATION > 0 && duration > 0 && duration > BattleConfig.MAX_STAY_AT_SAME_LOCATION_DURATION;
 			if (doit) {
 				switch (BattleConfig.WHEN_STAY_AT_SAME_LOCATION_REACHED_ITS_LIMIT_THEN) {
 				case 1:
 			  		teleport();
+					break;
+				case 2:
+			  		teleportCreamy();
+					break;
+				case 3:
+			  		moveRandomly();
 					break;
 				}
 			}

@@ -799,6 +799,7 @@ public class BattleScanner extends Scanner {
 	private long attackStartTime     = 0;
 	private int  idleNumSignal       = 0;
 	private long idleUpdateTime      = 0;
+	private int  actionDelay         = 30;
 	private void computeCharacterMode() {
     	try {
 	    	long     now = System.currentTimeMillis();
@@ -891,7 +892,7 @@ public class BattleScanner extends Scanner {
     public int hoverCell(int _cx, int _cy) {
     	int r = -1;
     	mouseGotoCell(_cx, _cy);
-    	sleep(40);
+    	sleep(actionDelay);
 	    int[] pixels = MouseHelper.capturePixels(this, true, 10);
     	if (MouseHelper.isMatch(MouseHelper.ASSET_TARGETING, pixels, 4, 20)) {
     		r = charMode = MODE_TARGET;
@@ -904,7 +905,7 @@ public class BattleScanner extends Scanner {
     public int cancel() {
     	int r = 0;
     	mouseGotoCell(mouseCellX, mouseCellY);
-    	sleep(40);
+    	sleep(actionDelay);
 		return r;
     }
     public int attack() {
@@ -913,9 +914,9 @@ public class BattleScanner extends Scanner {
     	idleUpdateTime = 0;
     	charMode = MODE_ATTACK;
     	mouseLeftClick();
-    	sleep(40);
+    	sleep(actionDelay);
     	mouseGotoCell(mouseCellX, mouseCellY);
-    	sleep(40);
+    	sleep(actionDelay);
     	return r;
     }
     public int pick() {
@@ -924,9 +925,9 @@ public class BattleScanner extends Scanner {
     	idleUpdateTime = 0;
     	charMode = MODE_PICK;
     	mouseLeftClick();
-    	sleep(40);
+    	sleep(actionDelay);
     	mouseGotoCell(mouseCellX, mouseCellY);
-    	sleep(40);
+    	sleep(actionDelay);
     	charMode = MODE_IDLE;
     	return r;
     }
@@ -940,6 +941,16 @@ public class BattleScanner extends Scanner {
     public int consumeHpPotion() {
     	return consumeHpPotion(20);
     }
+    public int consumeSpPotion(long sleep) {
+    	int r = 0;
+    	idleUpdateTime = 0;
+		keyPush(KeyEvent.VK_F3);
+    	sleep(sleep);
+		return r;
+    }
+    public int consumeSpPotion() {
+    	return consumeSpPotion(actionDelay);
+    }
     public int teleport(long sleep) {
     	int r = 0;
     	idleUpdateTime = 0;
@@ -949,10 +960,10 @@ public class BattleScanner extends Scanner {
 		return r;
     }
     public int teleport() {
-		return teleport(40);
+		return teleport(actionDelay);
     }
     public int teleportCreamy() {
-		return teleportCreamy(40);
+		return teleportCreamy(actionDelay);
     }
     public int teleportCreamy(long sleep) {
     	int r = 0;
@@ -979,11 +990,11 @@ public class BattleScanner extends Scanner {
     		idleUpdateTime = 0;
     	}
     	mouseGotoCell(cell._cx, cell._cy);
-    	sleep(40);
+    	sleep(actionDelay);
     	mouseLeftClick();
-    	sleep(40);
+    	sleep(actionDelay);
     	mouseGotoCell(mouseCellX, mouseCellY);
-    	sleep(40);
+    	sleep(actionDelay);
     	return r;
     }
 	public int moveRandomly() {
@@ -999,14 +1010,14 @@ public class BattleScanner extends Scanner {
 		}
 		return r;
 	}
-	public int moveRandomly(int maxDistance, boolean resetIdleUpdateTime) {
+	public int moveRandomly(int minDistance, int maxDistance, boolean resetIdleUpdateTime) {
 		int r = 0;
 		boolean run = true;
 		while (run) {
 			int x = new Random().nextInt(cellMatrix[0].length);
 			int y = new Random().nextInt(cellMatrix   .length);
 			int d = getCellDistance(x, y);
-			if (cellNeutral[y][x] == 0 && d < maxDistance) {
+			if (cellNeutral[y][x] == 0 && d <= maxDistance && d >= minDistance) {
 				run = false;
 				r = move(cellMatrix[y][x], resetIdleUpdateTime);
 			}

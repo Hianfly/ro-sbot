@@ -1,4 +1,4 @@
 f5_interval =  600000
 f6_interval =  600000
-f7_interval =  600000
+f7_interval =  150000
 f8_interval = 1800000

@@ -10,6 +10,14 @@ public class Config {
 	public static String BATTLE_CONFIG_NAME = "";
 	public static String LOGON_CONFIG_NAME = "";
 	public static String SHORTCUT_CONFIG_NAME = "";
+	public static String PORTAL_CONFIG_NAME = "";
+
+	public static int BATTLE_SCANNER_ENABLED = 1;
+	public static int INFO_SCANNER_ENABLED = 1;
+	public static int MESSAGE_SCANNER_ENABLED = 1;
+	public static int POPUP_SCANNER_ENABLED = 1;
+	public static int LOGON_SCANNER_ENABLED = 1;
+	public static int MAPS_SCANNER_ENABLED = 1;
 		
 	public Config(String name) {
 		this.name = name;

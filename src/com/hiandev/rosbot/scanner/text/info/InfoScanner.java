@@ -18,9 +18,9 @@ public class InfoScanner extends TextScanner {
 	public void onTextChanged(String[] rowTexts) {
 		super.onTextChanged(rowTexts);
 		try {
-			if (GlobalVar.getGameState() != GlobalVar.GAME_STATE_BATTLE) {
-				return;
-			}
+//			if (GlobalVar.getGameState() != GlobalVar.GAME_STATE_BATTLE) {
+//				return;
+//			}
 			lv    = 0;
 			job   = "";
 			jobLv = 0;
@@ -40,8 +40,13 @@ public class InfoScanner extends TextScanner {
 				if (e[0].startsWith("HP.")) {
 					hp    = Integer.parseInt(e[1]);
 					hpMax = Integer.parseInt(e[3]);
-					sp    = Integer.parseInt(e[6]);
-					spMax = Integer.parseInt(e[8]);
+					try {
+						sp    = Integer.parseInt(e[6]);
+						spMax = Integer.parseInt(e[8]);
+					} catch (Exception ex) {
+						sp    = 1;
+						spMax = 1;
+					}
 				}
 			}
 			if (lv != lastLv) {
