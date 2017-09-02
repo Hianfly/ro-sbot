@@ -1,0 +1,1 @@
+portal_locations = 64,42;41,6;100,3;

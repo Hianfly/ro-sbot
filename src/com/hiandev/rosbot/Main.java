@@ -117,6 +117,7 @@ public class Main {
 		public void onBlackPortalFound(int _mx, int _my, int _px, int _py) {
 			System.out.println("BlackPortal[" + _px + "," + _py + "] found!");
 			bttlScanner.teleport();
+			resetLocation();
 		}
 		
 		@Override
@@ -263,7 +264,7 @@ public class Main {
 		  	/*
 		  	 * 
 		  	 */
-			boolean doit = doWhenStayAtSameLocationReachedItsLimit(teleportLastTime <= 0 ? 0 : now - teleportLastTime);
+			boolean doit = doWhenStayAtSameLocationReachedItsLimit(now - teleportLastTime);
 			if (doit) {
 				return forceRetry;
 			}
@@ -363,7 +364,7 @@ public class Main {
 		}
 		
 		private boolean doWhenStayAtSameLocationReachedItsLimit(long duration) {
-			boolean doit = BattleConfig.MAX_STAY_AT_SAME_LOCATION_DURATION > 0 && duration > 0 && duration > BattleConfig.MAX_STAY_AT_SAME_LOCATION_DURATION;
+			boolean doit = BattleConfig.MAX_STAY_AT_SAME_LOCATION_DURATION > 0 && duration > BattleConfig.MAX_STAY_AT_SAME_LOCATION_DURATION;
 			if (doit) {
 				switch (BattleConfig.WHEN_STAY_AT_SAME_LOCATION_REACHED_ITS_LIMIT_THEN) {
 				case 1:

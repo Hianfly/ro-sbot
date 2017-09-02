@@ -1,7 +1,7 @@
-battle_config_name = battle-config-byalan-fast.txt
+battle_config_name = battle-config-morroc-fast.txt
 logon_config_name = logon-config.txt
 shortcut_config_name = shortcut-config.txt
-portal_config_name = portal-config-byalan-r4.txt
+portal_config_name = portal-config.txt
 
 
 battle_scanner_enabled = 1

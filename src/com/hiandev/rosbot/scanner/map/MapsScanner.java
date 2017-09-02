@@ -151,7 +151,7 @@ public class MapsScanner extends Scanner {
     	for (int x = 0; x < PORTAL_BLACK_LIST.size(); x++) {
     		_px = PORTAL_BLACK_LIST.get(x)[0];
     		_py = PORTAL_BLACK_LIST.get(x)[1];
-    		if (Math.abs(_mx - _px) < 15 && Math.abs(_my - _py) < 15) {
+    		if (Math.abs(_mx - _px) < 10 && Math.abs(_my - _py) < 10) {
     			near = true;
     			break;
     		}
@@ -164,6 +164,11 @@ public class MapsScanner extends Scanner {
     }
     public void onBlackPortalFound(int _mx, int _my, int _px, int _py) {
     	
+    }
+
+    public void resetLocation() {
+    	_mx = 0;
+    	_my = 0;
     }
     
     /*

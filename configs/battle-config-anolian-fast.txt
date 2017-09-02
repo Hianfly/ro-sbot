@@ -14,16 +14,16 @@ min_attack_duration = 750
 event_detection_interval = 500
 when_attack_done_then = 1
 hard_scan_surrounding_for_items_flag = 1
-max_stay_at_same_location_duration = 120000
+max_stay_at_same_location_duration = 20000
 when_stay_at_same_location_reached_its_limit_then = 1
-max_idle_duration = 5000
+max_idle_duration = 3000
 when_idle_reached_its_limit_then = 1
 wait_time_after_teleport = 1500
 min_distance_when_moving_after_teleport = 50
 max_distance_when_moving_after_teleport = 100
 
 
-do_teleportation_if_hp_below_than = 65
+do_teleportation_if_hp_below_than = 70
 use_potion_if_hp_below_than = 75
 use_potion_if_sp_below_than = 15;
 

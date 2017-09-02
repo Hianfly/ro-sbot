@@ -9,7 +9,7 @@ public class MessageScanner extends TextScanner {
 	public MessageScanner(int _x, int _y) throws AWTException {
 		super (_x + 5, _y, 580, 30); // 50
 		setAssetsDir("./assets/text-message/");
-		setTextPixels(new int[][] { { 0, 250, 250 } });
+		setTextPixels(new int[][] { { 250, 250, 0 } });
 		setInterval(100);
 		setDelay(1421);
 	}

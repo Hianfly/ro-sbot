@@ -4,9 +4,9 @@ background_removal_threshold = 50
 average_cell_pixels_floor = 10
 cell_motion_threshold = 10
 motion_object_padding = 2
-min_crowd_object_size = 20
+min_crowd_object_size = 30
 max_crowd_object_size = 9999
-show_preview = 1
+show_preview = 0
 
 
 max_attack_duration = 5000
@@ -16,9 +16,9 @@ when_attack_done_then = 1
 hard_scan_surrounding_for_items_flag = 1
 max_stay_at_same_location_duration = 60000
 when_stay_at_same_location_reached_its_limit_then = 1
-max_idle_duration = 2500
+max_idle_duration = 3000
 when_idle_reached_its_limit_then = 1
-wait_time_after_teleport = 1000
+wait_time_after_teleport = 500
 min_distance_when_moving_after_teleport = 0
 max_distance_when_moving_after_teleport = 0
 

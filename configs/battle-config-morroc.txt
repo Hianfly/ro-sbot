@@ -8,21 +8,21 @@ min_crowd_object_size = 50
 max_crowd_object_size = 9999
 
 
-max_attack_duration = 10000
+max_attack_duration = 5000
 min_attack_duration = 500
 event_detection_interval = 500
 when_attack_done_then = 1
 hard_scan_surrounding_for_items_flag = 1
 max_stay_at_same_location_duration = 15000
 when_stay_at_same_location_reached_its_limit_then = 1
-max_idle_duration = 3000
+max_idle_duration = 4000
 when_idle_reached_its_limit_then = 1
 wait_time_after_teleport = 500
-min_distance_when_moving_after_teleport = 50
-max_distance_when_moving_after_teleport = 100
+min_distance_when_moving_after_teleport = 20
+max_distance_when_moving_after_teleport = 40
 
 
-do_teleportation_if_hp_below_than = 70
+do_teleportation_if_hp_below_than = 65
 use_potion_if_hp_below_than = 70
 use_potion_if_sp_below_than = 10
 
